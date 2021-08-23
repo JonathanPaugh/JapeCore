@@ -1,8 +1,11 @@
 {
   "version": 2,
-  "dgSpecHash": "IdHrFXdK8hIPG2+aNPhsRIziPtumbZT47bczSxM+qcm+0MypV6d5OBjmjUPPq1xTkcWFOllwdLmX6fUPPpQTCw==",
+  "dgSpecHash": "Xh9uxxyl9s2B+xkLce1i0G7QE+DvmKALMN9lIIxIt7DtDS8ko/BoSyoLMEcIUgL8WGs34bT321dvR9Wfti9oVg==",
   "success": true,
   "projectFilePath": "P:\\Game Development\\Framework\\Services\\JapetheapeHttp\\JapeHttp.csproj",
-  "expectedPackageFiles": [],
+  "expectedPackageFiles": [
+    "C:\\Users\\Jonathan\\.nuget\\packages\\microsoft.netcore.app.runtime.linux-x64\\3.1.12\\microsoft.netcore.app.runtime.linux-x64.3.1.12.nupkg.sha512",
+    "C:\\Users\\Jonathan\\.nuget\\packages\\microsoft.aspnetcore.app.runtime.linux-x64\\3.1.12\\microsoft.aspnetcore.app.runtime.linux-x64.3.1.12.nupkg.sha512"
+  ],
   "logs": []
 }
