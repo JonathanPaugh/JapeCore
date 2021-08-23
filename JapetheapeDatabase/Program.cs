@@ -1,12 +1,17 @@
 ﻿using System;
+using System.Threading;
+using JapeHttp;
 
 namespace JapeDatabase
 {
-    class Program
+    public class Program
     {
-        static void Main(string[] args)
+        public static void Main()
         {
-            Console.WriteLine("Hello World!");
+            Log.Init();
+            Database database = new Database();
+            database.Start();
+            SpinWait.SpinUntil(() => false);
         }
     }
 }
