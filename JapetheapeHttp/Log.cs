@@ -38,9 +38,9 @@ namespace JapeHttp
 
             Trace.AutoFlush = true;
 
-            AppDomain.CurrentDomain.FirstChanceException += delegate(object sender, FirstChanceExceptionEventArgs e)
+            AppDomain.CurrentDomain.UnhandledException += delegate(object sender, UnhandledExceptionEventArgs e)
             {
-                Write(e.Exception.ToString());
+                Write(e.ToString());
             };
         }
 

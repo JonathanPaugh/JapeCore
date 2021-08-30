@@ -51,7 +51,7 @@ namespace JapeHttp
             return this;
         }
 
-        public Request Write(object value)
+        public Request Write(string value)
         {
             using (StreamWriter writer = new StreamWriter(request.GetRequestStream()))
             {
