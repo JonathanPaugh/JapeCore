@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "JapeDatabase": {
+      "commandName": "Project",
+      "nativeDebugging": true
+    }
+  }
+}

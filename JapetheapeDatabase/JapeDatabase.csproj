@@ -6,7 +6,25 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DefineConstants>TRACE</DefineConstants>
+  </PropertyGroup>
+
   <ItemGroup>
+    <None Remove="ca-certificate.crt" />
+    <None Remove="mongo.cer" />
+    <None Remove="mongo.crt" />
+    <None Remove="mongo.p7b" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="mongo.crt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MongoDB.Driver" Version="2.13.1" />
     <PackageReference Include="StackExchange.Redis" Version="2.2.62" />
   </ItemGroup>
 
