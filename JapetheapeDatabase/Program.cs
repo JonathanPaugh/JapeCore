@@ -8,7 +8,7 @@ namespace JapeDatabase
     {
         public static void Main()
         {
-            Log.Init();
+            Log.Init("database");
             Database database = new Database();
             database.Start();
             SpinWait.SpinUntil(() => false);

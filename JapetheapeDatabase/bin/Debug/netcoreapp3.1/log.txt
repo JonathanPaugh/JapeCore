@@ -1,2 +1,0 @@
-2021-08-27 00:57:12Z: Database Started
-2021-08-27 04:05:40Z: Database Started
