@@ -1,30 +1,26 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Globalization;
 using System.IO;
-using System.Runtime.ExceptionServices;
-using System.Text;
 
 namespace JapeHttp
 {
     public class Log
     {
-        private const string LogFile = "log.txt";
-
+        private static string LogPath => Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "logs");
         private static FileStream stream;
 
-        public static void Init()
+        public static void Init(string logFile = null)
         {
             Trace.Listeners.Clear();
 
             try
             {
-                stream = new FileStream($"./{LogFile}", FileMode.Append, FileAccess.Write);
+                Directory.CreateDirectory(LogPath);
+                stream = new FileStream(Path.Combine(LogPath, $"{logFile ?? string.Empty}.log"), FileMode.Append, FileAccess.Write);
             }
             catch (Exception e)
             {
-                Console.WriteLine($"Cannot open {LogFile} for writing");
+                Console.WriteLine($"Cannot open {LogPath} for writing");
                 Console.WriteLine(e.Message);
                 return;
             }
