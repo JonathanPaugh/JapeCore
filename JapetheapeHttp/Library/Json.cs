@@ -7,7 +7,7 @@ namespace JapeHttp
 {
     public static class Json
     {
-        public static string ExtractObject(string data, string value)
+        public static string Extract(string data, string value)
         {
             return ((JsonElement)JsonSerializer.Deserialize<Dictionary<string, object>>(data)[value]).GetRawText();
         }

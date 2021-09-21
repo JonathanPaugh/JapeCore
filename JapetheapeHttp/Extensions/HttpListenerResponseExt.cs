@@ -4,48 +4,51 @@ using System.IO;
 using System.Net;
 using System.Text;
 using System.Text.Json;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 
 namespace JapeHttp
 {
     public static class HttpListenerResponseExt
     {
-        public static void WriteJson(this HttpListenerResponse response, Dictionary<string, object> data)
+        public static async Task WriteJson(this HttpResponse response, Dictionary<string, object> data)
         {
-            using (StreamWriter writer = new StreamWriter(response.OutputStream)) 
+            await using (StreamWriter writer = new StreamWriter(response.Body)) 
             {
-                writer.Write(JsonSerializer.Serialize(data));
+                await writer.WriteAsync(JsonSerializer.Serialize(data));
             }
         }
 
-        public static void Write(this HttpListenerResponse response, string data)
+        public static async Task Write(this HttpResponse response, string data)
         {
-            using (StreamWriter writer = new StreamWriter(response.OutputStream))
+            await using (StreamWriter writer = new StreamWriter(response.Body))
             {
-                writer.Write(data);
+                await writer.WriteAsync(data);
             }
         }
 
-        public static void SetCorsHeaders(this HttpListenerResponse response)
+        public static void SetCorsHeaders(this HttpResponse response)
         {
             response.Headers.Add("Access-Control-Allow-Origin", "*");
             response.Headers.Add("Access-Control-Allow-Credentials", "true");
             response.Headers.Add("Access-Control-Max-Age", "86400");
         }
 
-        public static void SetPreflightHeaders(this HttpListenerResponse response)
+        public static void SetPreflightHeaders(this HttpResponse response)
         {
             response.Headers.Add("Access-Control-Allow-Methods", "*");
             response.Headers.Add("Access-Control-Allow-Headers", "*");
         }
 
-        public static void ResponseOptions(this HttpListenerResponse response)
+        public static async Task ResponseOptions(this HttpResponse response)
         {
             Log.Write("Preflight Request");
 
             SetPreflightHeaders(response);
 
             response.StatusCode = 200;
-            response.Close();
+
+            await response.CompleteAsync();
         }
     }
 }

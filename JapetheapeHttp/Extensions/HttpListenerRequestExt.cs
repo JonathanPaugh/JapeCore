@@ -4,25 +4,26 @@ using System.IO;
 using System.Net;
 using System.Text;
 using System.Text.Json;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 
 namespace JapeHttp
 {
     public static class HttpListenerRequestExt
     {
-        public static string Read(this HttpListenerRequest request)
+        public static async Task<string> Read(this HttpRequest request)
         {
-            using (StreamReader reader = new StreamReader(request.InputStream, request.ContentEncoding)) 
+            using (StreamReader reader = new StreamReader(request.Body)) 
             {
-                string data = reader.ReadToEnd();
-                return data;
+                return await reader.ReadToEndAsync();
             }
         }
 
-        public static Dictionary<string, JsonElement> ReadJson(this HttpListenerRequest request)
+        public static async Task<Dictionary<string, JsonElement>> ReadJson(this HttpRequest request)
         {
-            using (StreamReader reader = new StreamReader(request.InputStream, request.ContentEncoding)) 
+            using (StreamReader reader = new StreamReader(request.Body)) 
             {
-                string data = reader.ReadToEnd();
+                string data = await reader.ReadToEndAsync();
                 if (string.IsNullOrEmpty(data)) { return null; }
                 return JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(data);
             }
