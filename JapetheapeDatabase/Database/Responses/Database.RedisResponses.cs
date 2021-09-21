@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Text.Json;
 using JapeHttp;
+using Microsoft.AspNetCore.Http;
 using MongoDB.Bson;
 using MongoDB.Driver.Core.Bindings;
 using StackExchange.Redis;
@@ -12,10 +13,10 @@ namespace JapeDatabase
 {
     public partial class Database
     {
-        private Dictionary<string, Action<HttpListenerRequest, HttpListenerResponse, Dictionary<string, JsonElement>>> redisResponses;
+        private Dictionary<string, Action<HttpRequest, HttpResponse, Dictionary<string, JsonElement>>> redisResponses;
         private void RedisResponses()
         {
-            redisResponses = new Dictionary<string, Action<HttpListenerRequest, HttpListenerResponse, Dictionary<string, JsonElement>>>
+            redisResponses = new Dictionary<string, Action<HttpRequest, HttpResponse, Dictionary<string, JsonElement>>>
             {
                 { "Get", ResponseRedisGet },
                 { "Set", ResponseRedisSet },
@@ -27,7 +28,7 @@ namespace JapeDatabase
             };
         }
 
-        public async void ResponseRedisGet(HttpListenerRequest request, HttpListenerResponse response, Dictionary<string, JsonElement> data)
+        public async void ResponseRedisGet(HttpRequest request, HttpResponse response, Dictionary<string, JsonElement> data)
         {
             Log.Write("Get Request");
 
@@ -36,11 +37,11 @@ namespace JapeDatabase
             RedisValue value = await database.StringGetAsync(data["key"].GetString());
 
             response.StatusCode = 200;
-            response.Write(value.ToString());
-            response.Close();
+            await response.Write(value.ToString());
+            await response.CompleteAsync();
         }
 
-        public async void ResponseRedisSet(HttpListenerRequest request, HttpListenerResponse response, Dictionary<string, JsonElement> data)
+        public async void ResponseRedisSet(HttpRequest request, HttpResponse response, Dictionary<string, JsonElement> data)
         {
             Log.Write("Set Request");
 
@@ -49,11 +50,11 @@ namespace JapeDatabase
             bool value = await database.StringSetAsync(data["key"].GetString(), data["value"].GetString());
 
             response.StatusCode = 200;
-            response.Write(value.ToString());
-            response.Close();
+            await response.Write(value.ToString());
+            await response.CompleteAsync();
         }
 
-        public async void ResponseRedisRemove(HttpListenerRequest request, HttpListenerResponse response, Dictionary<string, JsonElement> data)
+        public async void ResponseRedisRemove(HttpRequest request, HttpResponse response, Dictionary<string, JsonElement> data)
         {
             Log.Write("Remove Request");
 
@@ -62,12 +63,12 @@ namespace JapeDatabase
             bool value = await database.KeyDeleteAsync(data["key"].GetString());
 
             response.StatusCode = 200;
-            response.Write(value.ToString());
-            response.Close();
+            await response.Write(value.ToString());
+            await response.CompleteAsync();
         }
 
         private Dictionary<string, Redis.Subscription> subscriptions = new Dictionary<string, Redis.Subscription>();
-        public async void ResponseRedisSubscribe(HttpListenerRequest request, HttpListenerResponse response, Dictionary<string, JsonElement> data)
+        public async void ResponseRedisSubscribe(HttpRequest request, HttpResponse response, Dictionary<string, JsonElement> data)
         {
             Log.Write("Subscribe Request");
 
@@ -104,8 +105,8 @@ namespace JapeDatabase
             }
 
             response.StatusCode = 200;
-            response.Write(key);
-            response.Close();
+            await response.Write(key);
+            await response.CompleteAsync();
 
             string GenerateSubscriptionKey()
             {
@@ -118,7 +119,7 @@ namespace JapeDatabase
             }
         }
 
-        public void ResponseRedisUnsubscribe(HttpListenerRequest request, HttpListenerResponse response, Dictionary<string, JsonElement> data)
+        public async void ResponseRedisUnsubscribe(HttpRequest request, HttpResponse response, Dictionary<string, JsonElement> data)
         {
             Log.Write("Unsubscribe Request");
 
@@ -126,7 +127,7 @@ namespace JapeDatabase
             if (!subscriptions.TryGetValue(key, out Redis.Subscription subscription))
             {
                 response.StatusCode = 404;
-                response.Close();
+                await response.CompleteAsync();
                 return;
             }
 
@@ -138,19 +139,19 @@ namespace JapeDatabase
             if (values.Length == 0)
             {
                 response.StatusCode = 204;
-                response.Close();
+                await response.CompleteAsync();
                 return;
             }
 
             response.StatusCode = 200;
-            response.WriteJson(new Dictionary<string, object>
+            await response.WriteJson(new Dictionary<string, object>
             {
                 { "values", values }
             });
-            response.Close();
+            await response.CompleteAsync();
         }
 
-        public async void ResponseRedisPublish(HttpListenerRequest request, HttpListenerResponse response, Dictionary<string, JsonElement> data)
+        public async void ResponseRedisPublish(HttpRequest request, HttpResponse response, Dictionary<string, JsonElement> data)
         {
             Log.Write("Publish Request");
 
@@ -159,18 +160,18 @@ namespace JapeDatabase
             long value = await database.PublishAsync(data["channel"].ToString(), data["value"].ToString());
 
             response.StatusCode = 200;
-            response.Write(value.ToString());
-            response.Close();
+            await response.Write(value.ToString());
+            await response.CompleteAsync();
         }
 
-        public void ResponseRedisReceive(HttpListenerRequest request, HttpListenerResponse response, Dictionary<string, JsonElement> data)
+        public async void ResponseRedisReceive(HttpRequest request, HttpResponse response, Dictionary<string, JsonElement> data)
         {
             Log.Write("Receive Request");
 
             if (!subscriptions.TryGetValue(data["subscription"].ToString(), out Redis.Subscription subscription))
             {
                 response.StatusCode = 404;
-                response.Close();
+                await response.CompleteAsync();
                 return;
             }
 
@@ -179,16 +180,16 @@ namespace JapeDatabase
             if (values.Length == 0)
             {
                 response.StatusCode = 204;
-                response.Close();
+                await response.CompleteAsync();
                 return;
             }
 
             response.StatusCode = 200;
-            response.WriteJson(new Dictionary<string, object>
+            await response.WriteJson(new Dictionary<string, object>
             {
                 { "values", values }
             });
-            response.Close();
+            await response.CompleteAsync();
         }
     }
 }

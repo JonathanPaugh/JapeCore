@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Net;
 using System.Text.Json;
 using JapeHttp;
+using Microsoft.AspNetCore.Http;
 using MongoDB.Bson;
 using MongoDB.Driver;
 
@@ -10,10 +11,10 @@ namespace JapeDatabase
 {
     public partial class Database
     {
-        private Dictionary<string, Action<HttpListenerRequest, HttpListenerResponse, Dictionary<string, JsonElement>>> mongoResponses;
+        private Dictionary<string, Action<HttpRequest, HttpResponse, Dictionary<string, JsonElement>>> mongoResponses;
         private void MongoResponses()
         {
-            mongoResponses = new Dictionary<string, Action<HttpListenerRequest, HttpListenerResponse, Dictionary<string, JsonElement>>>
+            mongoResponses = new Dictionary<string, Action<HttpRequest, HttpResponse, Dictionary<string, JsonElement>>>
             {
                 { "Get", ResponseMongoGet },
                 { "Insert", ResponseMongoInsert },
@@ -23,7 +24,7 @@ namespace JapeDatabase
             };
         }
 
-        public async void ResponseMongoGet(HttpListenerRequest request, HttpListenerResponse response, Dictionary<string, JsonElement> data)
+        public async void ResponseMongoGet(HttpRequest request, HttpResponse response, Dictionary<string, JsonElement> data)
         {
             Log.Write("Find Request");
 
@@ -34,11 +35,11 @@ namespace JapeDatabase
             BsonDocument document = await collection.Find(Mongo.Filters.Id(data["key"].GetString())).FirstOrDefaultAsync();
 
             response.StatusCode = 200;
-            response.Write(document.ToJson());
-            response.Close();
+            await response.Write(document.ToJson());
+            await response.CompleteAsync();
         }
 
-        public async void ResponseMongoInsert(HttpListenerRequest request, HttpListenerResponse response, Dictionary<string, JsonElement> data)
+        public async void ResponseMongoInsert(HttpRequest request, HttpResponse response, Dictionary<string, JsonElement> data)
         {
             Log.Write("Insert Request");
 
@@ -51,11 +52,11 @@ namespace JapeDatabase
             await collection.InsertOneAsync(document);
 
             response.StatusCode = 200;
-            response.Write(document.GetId());
-            response.Close();
+            await response.Write(document.GetId());
+            await response.CompleteAsync();
         }
 
-        public async void ResponseMongoUpdate(HttpListenerRequest request, HttpListenerResponse response, Dictionary<string, JsonElement> data)
+        public async void ResponseMongoUpdate(HttpRequest request, HttpResponse response, Dictionary<string, JsonElement> data)
         {
             Log.Write("Update Request");
 
@@ -83,11 +84,11 @@ namespace JapeDatabase
             BsonDocument document = await collection.FindOneAndUpdateAsync(Mongo.Filters.Id(data["key"].GetString()), update, options);
 
             response.StatusCode = 200;
-            response.Write(document.ToJson());
-            response.Close();
+            await response.Write(document.ToJson());
+            await response.CompleteAsync();
         }
 
-        public async void ResponseMongoRemove(HttpListenerRequest request, HttpListenerResponse response, Dictionary<string, JsonElement> data)
+        public async void ResponseMongoRemove(HttpRequest request, HttpResponse response, Dictionary<string, JsonElement> data)
         {
             Log.Write("Update Request");
 
@@ -113,11 +114,11 @@ namespace JapeDatabase
             BsonDocument document = await collection.FindOneAndUpdateAsync(Mongo.Filters.Id(data["key"].GetString()), update, options);
 
             response.StatusCode = 200;
-            response.Write(document.ToJson());
-            response.Close();
+            await response.Write(document.ToJson());
+            await response.CompleteAsync();
         }
 
-        public async void ResponseMongoDelete(HttpListenerRequest request, HttpListenerResponse response, Dictionary<string, JsonElement> data)
+        public async void ResponseMongoDelete(HttpRequest request, HttpResponse response, Dictionary<string, JsonElement> data)
         {
             Log.Write("Delete Request");
 
@@ -128,8 +129,8 @@ namespace JapeDatabase
             BsonDocument document = await collection.FindOneAndDeleteAsync(Mongo.Filters.Id(data["key"].GetString()));
 
             response.StatusCode = 200;
-            response.Write(document.ToJson());
-            response.Close();
+            await response.Write(document.ToJson());
+            await response.CompleteAsync();
         }
     }
 }

@@ -3,22 +3,23 @@ using System.Collections.Generic;
 using System.Net;
 using System.Text.Json;
 using JapeHttp;
+using Microsoft.AspNetCore.Http;
 
 namespace JapeDatabase
 {
     public partial class Database
     {
-        public void Request(HttpListenerRequest request, HttpListenerResponse response)
+        public async void Request(HttpRequest request, HttpResponse response)
         {
             Log.Write("Database Request");
 
-            Dictionary<string, JsonElement> data = request.ReadJson();
+            Dictionary<string, JsonElement> data = await request.ReadJson();
 
             response.SetCorsHeaders();
 
-            if (request.HttpMethod == "OPTIONS")
+            if (request.Method == "OPTIONS")
             {
-                response.ResponseOptions();
+                await response.ResponseOptions();
                 return;
             }
 
@@ -26,7 +27,7 @@ namespace JapeDatabase
             {
                 Log.Write("Database Request Error: Empty Data");
                 response.StatusCode = 401;
-                response.Close();
+                await response.CompleteAsync();
                 return;
             }
 
@@ -45,12 +46,12 @@ namespace JapeDatabase
                 default:
                     Log.Write("Database Request Error: Invalid Index");
                     response.StatusCode = 404;
-                    response.Close();
+                    await response.CompleteAsync();
                     break;
             }
         }
 
-        public void MongoRequest(HttpListenerRequest request, HttpListenerResponse response, Dictionary<string, JsonElement> data)
+        public async void MongoRequest(HttpRequest request, HttpResponse response, Dictionary<string, JsonElement> data)
         {
             string id = data["id"].GetString();
 
@@ -58,22 +59,22 @@ namespace JapeDatabase
             {
                 Log.Write("Database Request Error: Empty Id");
                 response.StatusCode = 404;
-                response.Close();
+                await response.CompleteAsync();
                 return;
             }
 
-            if (!mongoResponses.TryGetValue(id, out Action<HttpListenerRequest, HttpListenerResponse, Dictionary<string, JsonElement>> action))
+            if (!mongoResponses.TryGetValue(id, out Action<HttpRequest, HttpResponse, Dictionary<string, JsonElement>> action))
             {
                 Log.Write("Database Request Error: Incorrect Id");
                 response.StatusCode = 404;
-                response.Close();
+                await response.CompleteAsync();
                 return;
             }
 
             action.Invoke(request, response, data);
         }
 
-        public void RedisRequest(HttpListenerRequest request, HttpListenerResponse response, Dictionary<string, JsonElement> data)
+        public async void RedisRequest(HttpRequest request, HttpResponse response, Dictionary<string, JsonElement> data)
         {
             string id = data["id"].GetString();
 
@@ -81,15 +82,15 @@ namespace JapeDatabase
             {
                 Log.Write("Database Request Error: Empty Id");
                 response.StatusCode = 404;
-                response.Close();
+                await response.CompleteAsync();
                 return;
             }
 
-            if (!redisResponses.TryGetValue(id, out Action<HttpListenerRequest, HttpListenerResponse, Dictionary<string, JsonElement>> action))
+            if (!redisResponses.TryGetValue(id, out Action<HttpRequest, HttpResponse, Dictionary<string, JsonElement>> action))
             {
                 Log.Write("Database Request Error: Incorrect Id");
                 response.StatusCode = 404;
-                response.Close();
+                await response.CompleteAsync();
                 return;
             }
 
