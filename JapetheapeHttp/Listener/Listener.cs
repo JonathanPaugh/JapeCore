@@ -14,11 +14,11 @@ namespace JapeHttp
     {
         private IHostBuilder builder;
         
-        private Action<HttpRequest, HttpResponse> handler;
+        private Action<HttpContext> handler;
 
         private static string CertificateFile => Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "../ssl.pfx");
 
-        public Listener(Action<HttpRequest, HttpResponse> handler)
+        public Listener(Action<HttpContext> handler)
         {
             this.handler = handler;
 
@@ -75,7 +75,7 @@ namespace JapeHttp
             #pragma warning disable 1998
             app.Run(async context =>
             {
-                handler.Invoke(context.Request, context.Response);
+                handler.Invoke(context);
             });
             #pragma warning restore 1998
         }
