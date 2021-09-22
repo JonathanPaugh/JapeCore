@@ -32,9 +32,9 @@ namespace JapeDatabase
             listener.Start();
         }
 
-        private void ListenerRequest(HttpRequest request, HttpResponse response)
+        private void ListenerRequest(HttpContext context)
         {
-            Request(request, response);
+            Request(context);
         }
     }
 }

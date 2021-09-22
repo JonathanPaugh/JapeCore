@@ -9,9 +9,12 @@ namespace JapeDatabase
 {
     public partial class Database
     {
-        public async void Request(HttpRequest request, HttpResponse response)
+        public async void Request(HttpContext context)
         {
             Log.Write("Database Request");
+
+            HttpRequest request = context.Request;
+            HttpResponse response = context.Response;
 
             Dictionary<string, JsonElement> data = await request.ReadJson();
 
