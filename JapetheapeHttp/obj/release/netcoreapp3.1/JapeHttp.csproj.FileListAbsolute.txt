@@ -1,9 +1,0 @@
-P:\Game Development\Framework\Services\JapetheapeHttp\bin\release\netcoreapp3.1\JapeHttp.deps.json
-P:\Game Development\Framework\Services\JapetheapeHttp\bin\release\netcoreapp3.1\JapeHttp.dll
-P:\Game Development\Framework\Services\JapetheapeHttp\bin\release\netcoreapp3.1\JapeHttp.pdb
-P:\Game Development\Framework\Services\JapetheapeHttp\obj\release\netcoreapp3.1\JapeHttp.csprojAssemblyReference.cache
-P:\Game Development\Framework\Services\JapetheapeHttp\obj\release\netcoreapp3.1\JapeHttp.AssemblyInfoInputs.cache
-P:\Game Development\Framework\Services\JapetheapeHttp\obj\release\netcoreapp3.1\JapeHttp.AssemblyInfo.cs
-P:\Game Development\Framework\Services\JapetheapeHttp\obj\release\netcoreapp3.1\JapeHttp.csproj.CoreCompileInputs.cache
-P:\Game Development\Framework\Services\JapetheapeHttp\obj\release\netcoreapp3.1\JapeHttp.dll
-P:\Game Development\Framework\Services\JapetheapeHttp\obj\release\netcoreapp3.1\JapeHttp.pdb
