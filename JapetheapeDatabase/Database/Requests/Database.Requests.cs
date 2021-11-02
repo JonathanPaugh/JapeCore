@@ -16,8 +16,6 @@ namespace JapeDatabase
             HttpRequest request = context.Request;
             HttpResponse response = context.Response;
 
-            Dictionary<string, JsonElement> data = await request.ReadJson();
-
             response.SetCorsHeaders();
 
             if (request.Method == "OPTIONS")
@@ -25,6 +23,8 @@ namespace JapeDatabase
                 await response.ResponseOptions();
                 return;
             }
+
+            Dictionary<string, JsonElement> data = await request.ReadJson();
 
             if (data == null)
             {

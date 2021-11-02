@@ -1,4 +1,5 @@
-﻿using JapeHttp;
+﻿using System;
+using JapeHttp;
 using Microsoft.AspNetCore.Http;
 
 namespace JapeDatabase
@@ -22,6 +23,13 @@ namespace JapeDatabase
             StartListener();
 
             Log.Write("Database Started");
+
+            Console.CancelKeyPress += delegate { OnShutdown(); };
+        }
+
+        public void OnShutdown()
+        {
+            Log.Write("Database Stopped");
         }
 
         private void StartListener()
