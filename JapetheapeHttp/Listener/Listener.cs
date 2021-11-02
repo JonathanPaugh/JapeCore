@@ -1,8 +1,10 @@
 ﻿using System;
 using System.IO;
+using System.Net.Mime;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Hosting;
@@ -28,7 +30,7 @@ namespace JapeHttp
 
                 builder.ConfigureLogging(logger =>
                 {
-                    logger.SetMinimumLevel(LogLevel.Error);
+                    logger.SetMinimumLevel(LogLevel.Warning);
                 });
 
                 builder.UseKestrel(kestrel =>
@@ -82,7 +84,12 @@ namespace JapeHttp
 
         public void Start()
         {
-            builder.Build().StartAsync();
+            Task.Run(() =>
+            {
+                IHost host = builder.UseConsoleLifetime().Build();
+                host.Run();
+                Environment.Exit(0);
+            });
         }
     }
 }
