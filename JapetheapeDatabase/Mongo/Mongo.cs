@@ -31,9 +31,9 @@ namespace JapeDatabase
         
         public static Mongo Connect()
         {
-            Mongo mongo = new Mongo();
+            Mongo mongo = new();
 
-            MongoClientSettings settings = new MongoClientSettings()
+            MongoClientSettings settings = new()
             {
                 Scheme = Scheme,
                 Server = new MongoServerAddress(Host, Port),
@@ -50,12 +50,12 @@ namespace JapeDatabase
                 settings.UseTls = true;
                 settings.AllowInsecureTls = InsecureSSL;
 
-                X509Certificate2Collection certificates = new X509Certificate2Collection(new []
+                X509Certificate2Collection certificates = new(new []
                 {
                     new X509Certificate2(CertificateFile)
                 });
 
-                List<X509Certificate> temp = new List<X509Certificate>();
+                List<X509Certificate> temp = new();
                 foreach (X509Certificate2 certificate in certificates)
                 {
                     temp.Add(certificate);

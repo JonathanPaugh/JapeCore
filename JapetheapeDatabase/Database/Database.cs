@@ -1,48 +1,53 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Text.Json;
+using System.Threading.Tasks;
+using JapeCore;
 using JapeHttp;
+using JapeService;
+using JapeService.Responder;
 using Microsoft.AspNetCore.Http;
 
 namespace JapeDatabase
 {
-    public partial class Database
+    public partial class Database : RestService
     {
-        private const int Port = 1434;
-        private const int PortSecure = 1443;
+        private Responder<byte> Director => GetResponder<byte>("Director");
+        private Responder<string> MongoResponder => GetResponder<string>("Mongo");
+        private Responder<string> RedisResponder => GetResponder<string>("Redis");
 
         private Mongo mongo;
         private Redis redis;
 
-        public void Start()
+        public Database(int http, int https) : base(http, https) {}
+
+        protected override void OnStart()
         {
             mongo = Mongo.Connect();
-            MongoResponses();
-
             redis = Redis.Connect();
-            RedisResponses();
-
-            StartListener();
-
-            Log.Write("Database Started");
-
-            Console.CancelKeyPress += delegate { OnShutdown(); };
         }
 
-        public void OnShutdown()
+        protected override async Task OnRequest(HttpContext context)
         {
-            Log.Write("Database Stopped");
+            await Director.Respond(context.Request, context.Response);
         }
 
-        private void StartListener()
+        protected override ResponderList Responders(ResponderFactory factory)
         {
-            Listener listener = new Listener(ListenerRequest);
-            listener.CreateServer(Port);
-            listener.CreateServerSecure(PortSecure);
-            listener.Start();
-        }
+            IResponder mongoResponder = factory.Create("Mongo", data => data.GetString("id")).Responses(MongoResponses).Build();
+            IResponder redisResponder = factory.Create("Redis", data => data.GetString("id")).Responses(RedisResponses).Build();
 
-        private void ListenerRequest(HttpContext context)
-        {
-            Request(context);
+            return new ResponderList
+            {
+                factory.Create("Director", data => data.GetByte("index")).Responses(new ResponseBank<byte>
+                {
+                    { 0, mongoResponder.Invoke },
+                    { 1, redisResponder.Invoke }
+                }).Build(),
+
+                mongoResponder,
+                redisResponder
+            };
         }
     }
 }

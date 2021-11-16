@@ -2,6 +2,7 @@
   "profiles": {
     "JapeDatabase": {
       "commandName": "Project",
+      "commandLineArgs": "--http 1433  --https 1434",
       "nativeDebugging": true
     }
   }

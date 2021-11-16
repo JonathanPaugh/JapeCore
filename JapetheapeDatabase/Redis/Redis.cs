@@ -18,11 +18,13 @@ namespace JapeDatabase
 
         private static ConnectionMultiplexer connection;
 
+        public readonly Dictionary<string, Subscription> subscriptions = new();
+
         private Redis() {}
 
         public static Redis Connect()
         {
-            Redis redis = new Redis();
+            Redis redis = new();
 
             ConfigurationOptions settings = ConfigurationOptions.Parse($"{Host}:{Port}");
 
@@ -55,7 +57,7 @@ namespace JapeDatabase
         public class Subscription
         {
             public readonly ISubscriber subscriber;
-            private readonly List<string> values = new List<string>();
+            private readonly List<string> values = new();
 
             public Subscription(ISubscriber subscriber)
             {

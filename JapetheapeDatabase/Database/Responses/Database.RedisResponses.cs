@@ -1,87 +1,75 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Text.Json;
+using System.Threading.Tasks;
+using JapeCore;
 using JapeHttp;
+using JapeService;
+using JapeService.Responder;
 using Microsoft.AspNetCore.Http;
-using MongoDB.Bson;
-using MongoDB.Driver.Core.Bindings;
 using StackExchange.Redis;
 
 namespace JapeDatabase
 {
     public partial class Database
     {
-        private Dictionary<string, Action<HttpRequest, HttpResponse, Dictionary<string, JsonElement>>> redisResponses;
-        private void RedisResponses()
+        private ResponseBank<string> RedisResponses => new()
         {
-            redisResponses = new Dictionary<string, Action<HttpRequest, HttpResponse, Dictionary<string, JsonElement>>>
-            {
-                { "Get", ResponseRedisGet },
-                { "Set", ResponseRedisSet },
-                { "Remove", ResponseRedisRemove },
-                { "Subscribe", ResponseRedisSubscribe },
-                { "Unsubscribe", ResponseRedisUnsubscribe },
-                { "Publish", ResponseRedisPublish },
-                { "Receive", ResponseRedisReceive },
-            };
-        }
+            { "Get", ResponseRedisGet },
+            { "Set", ResponseRedisSet },
+            { "Remove", ResponseRedisRemove },
+            { "Subscribe", ResponseRedisSubscribe },
+            { "Unsubscribe", ResponseRedisUnsubscribe },
+            { "Publish", ResponseRedisPublish },
+            { "Receive", ResponseRedisReceive },
+        };
 
-        public async void ResponseRedisGet(HttpRequest request, HttpResponse response, Dictionary<string, JsonElement> data)
+        public async Task<Resolution> ResponseRedisGet(Responder<string>.Transfer transfer, JsonData data, object[] args)
         {
             Log.Write("Get Request");
 
             IDatabase database = redis.GetDatabase();
 
-            RedisValue value = await database.StringGetAsync(data["key"].GetString());
+            RedisValue value = await database.StringGetAsync(data.GetString("key"));
 
-            response.StatusCode = 200;
-            await response.Write(value.ToString());
-            await response.CompleteAsync();
+            return await transfer.Complete(Status.SuccessCode.Ok, value.ToString());
         }
 
-        public async void ResponseRedisSet(HttpRequest request, HttpResponse response, Dictionary<string, JsonElement> data)
+        public async Task<Resolution> ResponseRedisSet(Responder<string>.Transfer transfer, JsonData data, object[] args)
         {
             Log.Write("Set Request");
 
             IDatabase database = redis.GetDatabase();
 
-            bool value = await database.StringSetAsync(data["key"].GetString(), data["value"].GetString());
+            bool value = await database.StringSetAsync(data.GetString("key"), data.GetString("value"));
 
-            response.StatusCode = 200;
-            await response.Write(value.ToString());
-            await response.CompleteAsync();
+            return await transfer.Complete(Status.SuccessCode.Ok, value.ToString());
         }
 
-        public async void ResponseRedisRemove(HttpRequest request, HttpResponse response, Dictionary<string, JsonElement> data)
+        public async Task<Resolution> ResponseRedisRemove(Responder<string>.Transfer transfer, JsonData data, object[] args)
         {
             Log.Write("Remove Request");
 
             IDatabase database = redis.GetDatabase();
 
-            bool value = await database.KeyDeleteAsync(data["key"].GetString());
+            bool value = await database.KeyDeleteAsync(data.GetString("key"));
 
-            response.StatusCode = 200;
-            await response.Write(value.ToString());
-            await response.CompleteAsync();
+            return await transfer.Complete(Status.SuccessCode.Ok, value.ToString());
         }
 
-        private Dictionary<string, Redis.Subscription> subscriptions = new Dictionary<string, Redis.Subscription>();
-        public async void ResponseRedisSubscribe(HttpRequest request, HttpResponse response, Dictionary<string, JsonElement> data)
+        public async Task<Resolution> ResponseRedisSubscribe(Responder<string>.Transfer transfer, JsonData data, object[] args)
         {
             Log.Write("Subscribe Request");
 
             ConnectionMultiplexer connection = redis.GetConnection();
 
-            byte mode = data["mode"].GetByte();
-            string channel = data["channel"].ToString();
+            byte mode = data.GetByte("mode");
+            string channel = data.GetString("channel");
 
             ISubscriber subscriber = connection.GetSubscriber();
             string key = GenerateSubscriptionKey();
 
-            Redis.Subscription subscription = new Redis.Subscription(subscriber);
-            subscriptions.Add(key, subscription);
+            Redis.Subscription subscription = new(subscriber);
+            redis.subscriptions.Add(key, subscription);
 
             switch (mode)
             {
@@ -104,92 +92,76 @@ namespace JapeDatabase
                 }
             }
 
-            response.StatusCode = 200;
-            await response.Write(key);
-            await response.CompleteAsync();
+            return await transfer.Complete(Status.SuccessCode.Ok, key);
 
             string GenerateSubscriptionKey()
             {
-                string key;
+                string tempKey;
                 do 
                 {
-                    key = Guid.NewGuid().ToString();
-                } while (subscriptions.ContainsKey(key));
-                return key;
+                    tempKey = Guid.NewGuid().ToString();
+                } while (redis.subscriptions.ContainsKey(tempKey));
+                return tempKey;
             }
         }
 
-        public async void ResponseRedisUnsubscribe(HttpRequest request, HttpResponse response, Dictionary<string, JsonElement> data)
+        public async Task<Resolution> ResponseRedisUnsubscribe(Responder<string>.Transfer transfer, JsonData data, object[] args)
         {
             Log.Write("Unsubscribe Request");
 
-            string key = data["subscription"].ToString();
-            if (!subscriptions.TryGetValue(key, out Redis.Subscription subscription))
+            string key = data.GetString("subscription");
+            if (!redis.subscriptions.TryGetValue(key, out Redis.Subscription subscription))
             {
-                response.StatusCode = 404;
-                await response.CompleteAsync();
-                return;
+                return await transfer.Abort(Status.ErrorCode.NotFound);
             }
 
             subscription.Unsubscribe();
-            subscriptions.Remove(key);
+            redis.subscriptions.Remove(key);
 
             string[] values = subscription.Pull();
 
             if (values.Length == 0)
             {
-                response.StatusCode = 204;
-                await response.CompleteAsync();
-                return;
+                return await transfer.Complete(Status.SuccessCode.Empty);
             }
 
-            response.StatusCode = 200;
-            await response.WriteJson(new Dictionary<string, object>
+            return await transfer.Complete(Status.SuccessCode.Ok, new JsonData
             {
                 { "values", values }
             });
-            await response.CompleteAsync();
         }
 
-        public async void ResponseRedisPublish(HttpRequest request, HttpResponse response, Dictionary<string, JsonElement> data)
+        public async Task<Resolution> ResponseRedisPublish(Responder<string>.Transfer transfer, JsonData data, object[] args)
         {
             Log.Write("Publish Request");
 
             IDatabase database = redis.GetDatabase();
 
-            long value = await database.PublishAsync(data["channel"].ToString(), data["value"].ToString());
+            long value = await database.PublishAsync(data.GetString("channel"), data.GetString("value"));
 
-            response.StatusCode = 200;
-            await response.Write(value.ToString());
-            await response.CompleteAsync();
+            return await transfer.Complete(Status.SuccessCode.Ok, value.ToString());
         }
 
-        public async void ResponseRedisReceive(HttpRequest request, HttpResponse response, Dictionary<string, JsonElement> data)
+        public async Task<Resolution> ResponseRedisReceive(Responder<string>.Transfer transfer, JsonData data, object[] args)
         {
             Log.Write("Receive Request");
 
-            if (!subscriptions.TryGetValue(data["subscription"].ToString(), out Redis.Subscription subscription))
+            if (!redis.subscriptions.TryGetValue(data.GetString("subscription"), out Redis.Subscription subscription))
             {
-                response.StatusCode = 404;
-                await response.CompleteAsync();
-                return;
+                return await transfer.Abort(Status.ErrorCode.NotFound);
             }
 
             string[] values = subscription.Pull();
 
             if (values.Length == 0)
             {
-                response.StatusCode = 204;
-                await response.CompleteAsync();
-                return;
+                return await transfer.Abort(Status.ErrorCode.NotFound);
             }
 
-            response.StatusCode = 200;
-            await response.WriteJson(new Dictionary<string, object>
+            return await transfer.Complete(Status.SuccessCode.Ok, new JsonData
             {
                 { "values", values }
             });
-            await response.CompleteAsync();
         }
     }
 }
