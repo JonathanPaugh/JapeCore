@@ -1,15 +1,21 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
 using System.Text.Json;
 
 namespace JapeHttp
 {
     public static class Json
     {
-        public static string Extract(string data, string value)
+        public static JsonElement DeserializeObject(object value)
         {
-            return ((JsonElement)JsonSerializer.Deserialize<Dictionary<string, object>>(data)[value]).GetRawText();
+            byte[] bytes = JsonSerializer.SerializeToUtf8Bytes(value);
+            Utf8JsonReader reader = new(bytes);
+            using JsonDocument document = JsonDocument.ParseValue(ref reader);
+            return document.RootElement.Clone();
+        }
+
+        public static string Extract(string data, string key)
+        {
+            return ((JsonElement)JsonSerializer.Deserialize<Dictionary<string, object>>(data)[key]).GetRawText();
         }
     }
 }

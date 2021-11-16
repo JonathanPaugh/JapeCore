@@ -1,12 +1,11 @@
 ﻿using System;
 using System.IO;
-using System.Net.Mime;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
@@ -16,17 +15,17 @@ namespace JapeHttp
     {
         private IHostBuilder builder;
         
-        private Action<HttpContext> handler;
+        private Func<HttpContext, Task> onRequest;
 
         private static string CertificateFile => Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "../ssl.pfx");
 
-        public Listener(Action<HttpContext> handler)
+        public Listener(Func<HttpContext, Task> onRequest)
         {
-            this.handler = handler;
+            this.onRequest = onRequest;
 
             builder = Host.CreateDefaultBuilder().ConfigureWebHostDefaults(builder =>
             {
-                builder.Configure(Init);
+                builder.ConfigureServices(Services);
 
                 builder.ConfigureLogging(logger =>
                 {
@@ -44,6 +43,18 @@ namespace JapeHttp
                         }
                     });
                 });
+
+                builder.Configure(Setup);
+            });
+        }
+
+        public void Start()
+        {
+            Task.Run(() =>
+            {
+                IHost host = builder.UseConsoleLifetime().Build();
+                host.Run();
+                Environment.Exit(0);
             });
         }
 
@@ -72,23 +83,28 @@ namespace JapeHttp
             });
         }
 
-        private void Init(IApplicationBuilder app)
+        private void Services(IServiceCollection services)
         {
-            #pragma warning disable 1998
-            app.Run(async context =>
+            services.AddCors(cors =>
             {
-                handler.Invoke(context);
+                cors.AddDefaultPolicy(policy =>
+                {
+                    policy.AllowAnyOrigin();
+                    policy.AllowAnyHeader();
+                    policy.AllowAnyMethod();
+                    policy.SetPreflightMaxAge(TimeSpan.FromDays(1));
+                    policy.Build();
+                });
             });
-            #pragma warning restore 1998
         }
 
-        public void Start()
+        private void Setup(IApplicationBuilder app)
         {
-            Task.Run(() =>
+            app.UseCors();
+
+            app.Run(async context =>
             {
-                IHost host = builder.UseConsoleLifetime().Build();
-                host.Run();
-                Environment.Exit(0);
+                await onRequest.Invoke(context);
             });
         }
     }

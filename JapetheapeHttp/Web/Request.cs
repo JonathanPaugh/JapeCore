@@ -1,7 +1,5 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.Net;
-using System.Text;
 
 namespace JapeHttp
 {
@@ -9,7 +7,7 @@ namespace JapeHttp
     {
         public enum Method { Get, Post, Create, Delete }
 
-        private readonly HttpWebRequest request;
+        private readonly WebRequest request;
 
         public Request(string url)
         {
@@ -51,13 +49,18 @@ namespace JapeHttp
             return this;
         }
 
-        public Request Write(string value)
+        public Request Write(string data)
         {
-            using (StreamWriter writer = new StreamWriter(request.GetRequestStream()))
+            using (StreamWriter writer = new(request.GetRequestStream()))
             {
-                writer.Write(value);
+                writer.Write(data);
             }
             return this;
+        }
+
+        public Request WriteJson(JsonData data)
+        {
+            return Write(data.Serialize());
         }
 
         public Response GetResponse()
