@@ -1,8 +1,5 @@
-﻿using System.Collections.Generic;
-using System.IO;
-using System.Text.Json;
+﻿using System.IO;
 using System.Threading.Tasks;
-using JapeCore;
 using Microsoft.AspNetCore.Http;
 
 namespace JapeHttp
@@ -11,10 +8,8 @@ namespace JapeHttp
     {
         public static async Task Write(this HttpResponse response, string data)
         {
-            await using (StreamWriter writer = new(response.Body))
-            {
-                await writer.WriteAsync(data);
-            }
+            await using StreamWriter writer = new(response.Body);
+            await writer.WriteAsync(data);
         }
 
         public static async Task WriteJson(this HttpResponse response, JsonData data)

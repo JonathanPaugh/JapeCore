@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Net;
-using System.Text;
+﻿using System.Collections.Generic;
 using StackExchange.Redis;
 
 namespace JapeDatabase
@@ -16,16 +13,17 @@ namespace JapeDatabase
 
         private const bool UseSSL = false;
 
-        private static ConnectionMultiplexer connection;
+        private readonly ConnectionMultiplexer connection;
 
         public readonly Dictionary<string, Subscription> subscriptions = new();
 
-        private Redis() {}
+        private Redis(ConnectionMultiplexer connection)
+        {
+            this.connection = connection;
+        }
 
         public static Redis Connect()
         {
-            Redis redis = new();
-
             ConfigurationOptions settings = ConfigurationOptions.Parse($"{Host}:{Port}");
 
             settings.AllowAdmin = true;
@@ -39,9 +37,7 @@ namespace JapeDatabase
 
             settings.Ssl = UseSSL;
 
-            connection = ConnectionMultiplexer.Connect(settings);
-
-            return redis;
+            return new Redis(ConnectionMultiplexer.Connect(settings));
         }
 
         public ConnectionMultiplexer GetConnection()

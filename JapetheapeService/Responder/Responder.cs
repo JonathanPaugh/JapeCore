@@ -111,7 +111,7 @@ namespace JapeService.Responder
         {
             Transfer transfer = new(request, response, Execute);
 
-            RespondPre(transfer);
+            Log.Write($"{Name} Request");
 
             foreach (RequestIntercepter intercepter in requestIntercepters)
             {
@@ -130,19 +130,6 @@ namespace JapeService.Responder
             }
 
             await RespondPost(transfer, data, args);
-        }
-
-        private void RespondPre(Transfer transfer)
-        {
-            Log.Write($"{Name} Request");
-
-            transfer.response.OnStarting(OnStart);
-            transfer.response.OnCompleted(OnComplete);
-
-            #pragma warning disable 1998
-            async Task OnStart() => Log.Write($"{Name} Response Started");
-            async Task OnComplete() => Log.Write($"{Name} Response Completed");
-            #pragma warning restore 1998
         }
 
         private async Task<JsonData> RespondData(Transfer transfer)

@@ -7,7 +7,9 @@ namespace JapeCore
     public class Log
     {
         private static string LogPath => Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Logs");
+
         private static FileStream stream;
+        private static StreamWriter writer;
 
         public static void Init(string logFile = null)
         {
@@ -21,6 +23,17 @@ namespace JapeCore
             catch (Exception e)
             {
                 Console.WriteLine($"Cannot open {LogPath} for writing");
+                Console.WriteLine(e.Message);
+                return;
+            }
+
+            try
+            {
+                writer = new StreamWriter(stream);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"Cannot create stream writer for {LogPath}");
                 Console.WriteLine(e.Message);
                 return;
             }
@@ -47,9 +60,15 @@ namespace JapeCore
 
         public static void WriteLog(string value)
         {
-            StreamWriter writer = new(stream);
-            writer.WriteLine(Stamp(value));
-            writer.Close();
+            try
+            {
+                writer.WriteLine(Stamp(value));
+                writer.Flush();
+            }
+            catch (Exception)
+            {
+                Console.WriteLine("Could not write to log");
+            }
         }
         
         public static string Stamp(string value)

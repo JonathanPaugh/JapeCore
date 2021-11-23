@@ -25,20 +25,23 @@ namespace JapeDatabase
 
         private static string CertificateFile => Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "mongo.crt");
 
-        private static MongoClient connection;
+        private readonly MongoClient connection;
 
-        private Mongo() {} 
+        private Mongo(MongoClient connection)
+        {
+            this.connection = connection;
+        } 
         
         public static Mongo Connect()
         {
-            Mongo mongo = new();
-
             MongoClientSettings settings = new()
             {
                 Scheme = Scheme,
                 Server = new MongoServerAddress(Host, Port),
                 Credential = MongoCredential.CreateCredential(Database, User, Password),
             };
+
+            #pragma warning disable CS0162 // Unreachable code detected
 
             if (ReplicaSet != null)
             {
@@ -70,9 +73,9 @@ namespace JapeDatabase
                 temp.Clear();
             }
 
-            connection = new MongoClient(settings);
+            #pragma warning restore CS0162 // Unreachable code detected
 
-            return mongo;
+            return new Mongo(new MongoClient(settings));
         }
 
         public MongoClient GetConnection()

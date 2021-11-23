@@ -1,11 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using JapeCore;
 using JapeHttp;
 using JapeService;
 using JapeService.Responder;
-using Microsoft.AspNetCore.Http;
 using StackExchange.Redis;
 
 namespace JapeDatabase

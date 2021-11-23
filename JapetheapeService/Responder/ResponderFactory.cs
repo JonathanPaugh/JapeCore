@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using JapeCore;
 using JapeHttp;
-using JapeService.Responder;
 
 namespace JapeService.Responder
 {
@@ -11,6 +9,7 @@ namespace JapeService.Responder
     {
         internal ResponderFactory() {}
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "<Pending>")]
         public Builder<T> Create<T>(string name, Func<JsonData, T> indexer)
         {
             return new Builder<T>(name, indexer);

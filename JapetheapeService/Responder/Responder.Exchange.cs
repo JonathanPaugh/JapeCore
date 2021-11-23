@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using JapeHttp;
 using Microsoft.AspNetCore.Http;
@@ -13,7 +12,7 @@ namespace JapeService.Responder
             internal readonly HttpRequest request;
             internal readonly HttpResponse response;
 
-            private Func<T, Transfer, JsonData, object[], Task<Resolution>> caller;
+            private readonly Func<T, Transfer, JsonData, object[], Task<Resolution>> caller;
 
             public string Method => request.Method;
 

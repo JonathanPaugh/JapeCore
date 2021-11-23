@@ -1,24 +1,19 @@
-﻿using System;
-using System.IO;
-using System.Net;
-using System.Text;
-
-namespace JapeHttp
+﻿namespace JapeHttp
 {
     public class Api
     {
-        private readonly string api;
-        private readonly string key;
+        private readonly string url;
+        public string Key { get; }
 
-        public Api(string api, string key)
+        public Api(string url, string key)
         {
-            this.api = api;
-            this.key = key;
+            this.url = url;
+            Key = key;
         }
 
         public Request Request(string request)
         {
-            return new Request(api + request);
+            return new Request(url + request);
         }
     }
 }

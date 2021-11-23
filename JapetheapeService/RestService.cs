@@ -1,6 +1,5 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
-using Microsoft.AspNetCore.Http;
 using JapeService.Responder;
 
 namespace JapeService
@@ -23,7 +22,7 @@ namespace JapeService
 
         public class ResponderList : IEnumerable
         {
-            private Dictionary<string, IResponder> responders = new();
+            private readonly Dictionary<string, IResponder> responders = new();
 
             public IEnumerator GetEnumerator() => responders.GetEnumerator();
             public void Add(IResponder responder) => responders.Add(responder.Name, responder);

@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text.Json;
-using System.Threading.Tasks;
-using JapeCore;
-using JapeHttp;
+﻿using System.Threading.Tasks;
 using JapeService;
 using JapeService.Responder;
 using Microsoft.AspNetCore.Http;
@@ -13,7 +8,11 @@ namespace JapeDatabase
     public partial class Database : RestService
     {
         private Responder<byte> Director => GetResponder<byte>("Director");
+
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "<Pending>")]
         private Responder<string> MongoResponder => GetResponder<string>("Mongo");
+
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "<Pending>")]
         private Responder<string> RedisResponder => GetResponder<string>("Redis");
 
         private Mongo mongo;

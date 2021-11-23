@@ -5,7 +5,6 @@ using JapeHttp;
 using JapeCore;
 using JapeService;
 using JapeService.Responder;
-using Microsoft.AspNetCore.Http;
 using MongoDB.Bson;
 using MongoDB.Driver;
 
@@ -90,9 +89,9 @@ namespace JapeDatabase
 
             List<UpdateDefinition<BsonDocument>> updates = new();
 
-            foreach (JsonElement element in data.Get("data").EnumerateArray())
+            foreach (string element in data.GetStringArray("data"))
             {
-                updates.Add(Builders<BsonDocument>.Update.Unset(element.ToString()));
+                updates.Add(Builders<BsonDocument>.Update.Unset(element));
             }
 
             UpdateDefinition<BsonDocument> update = Builders<BsonDocument>.Update.Combine(updates);
