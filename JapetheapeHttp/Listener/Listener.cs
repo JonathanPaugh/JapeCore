@@ -4,7 +4,6 @@ using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -13,16 +12,12 @@ namespace JapeHttp
 {
     public class Listener
     {
-        private IHostBuilder builder;
-        
-        private Func<HttpContext, Task> onRequest;
-
         private static string CertificateFile => Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "../ssl.pfx");
 
-        public Listener(Func<HttpContext, Task> onRequest)
-        {
-            this.onRequest = onRequest;
+        private readonly IHostBuilder builder;
 
+        public Listener()
+        {
             builder = Host.CreateDefaultBuilder().ConfigureWebHostDefaults(builder =>
             {
                 builder.ConfigureServices(Services);
@@ -48,15 +43,7 @@ namespace JapeHttp
             });
         }
 
-        public void Start()
-        {
-            Task.Run(() =>
-            {
-                IHost host = builder.UseConsoleLifetime().Build();
-                host.Run();
-                Environment.Exit(0);
-            });
-        }
+        public void SetLogLevel(LogLevel level) => builder.ConfigureLogging(logger => logger.SetMinimumLevel(level));
 
         public void CreateServer(int port)
         {
@@ -83,29 +70,17 @@ namespace JapeHttp
             });
         }
 
-        private void Services(IServiceCollection services)
+        public void Start()
         {
-            services.AddCors(cors =>
+            Task.Run(() =>
             {
-                cors.AddDefaultPolicy(policy =>
-                {
-                    policy.AllowAnyOrigin();
-                    policy.AllowAnyHeader();
-                    policy.AllowAnyMethod();
-                    policy.SetPreflightMaxAge(TimeSpan.FromDays(1));
-                    policy.Build();
-                });
+                IHost host = builder.UseConsoleLifetime().Build();
+                host.Run();
+                Environment.Exit(0);
             });
         }
 
-        private void Setup(IApplicationBuilder app)
-        {
-            app.UseCors();
-
-            app.Run(async context =>
-            {
-                await onRequest.Invoke(context);
-            });
-        }
+        protected virtual void Services(IServiceCollection services) {}
+        protected virtual void Setup(IApplicationBuilder app) {}
     }
 }

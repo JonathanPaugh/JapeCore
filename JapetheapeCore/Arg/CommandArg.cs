@@ -6,28 +6,30 @@ namespace JapeCore
 {
     public readonly struct CommandArg<T> : ICommandArg
     {
-        public Type Type => typeof(T);
+        Type ICommandArg.Type => typeof(T);
 
-        public bool Optional => optional;
-        public string Name => name;
-        public string Description => description;
-        public Func<object?>? GetDefault => getDefault;
-        public string[] Aliases => aliases;
+        bool ICommandArg.Optional => optional;
+        string ICommandArg.Name => name;
+        string ICommandArg.Description => description;
+        Func<object?> ICommandArg.GetDefault => getDefault;
+        string[] ICommandArg.Aliases => aliases;
 
-        public readonly bool optional;
-        public readonly string name;
-        public readonly string description;
-        public readonly Func<object?>? getDefault;
-        public readonly string[] aliases;
+        private readonly bool optional;
+        private readonly string name;
+        private readonly string description;
+        private readonly Func<object?> getDefault;
+        private readonly string[] aliases;
 
         private CommandArg(bool optional, string name, string description = null!, Func<object?>? getDefault = null, params string[] aliases)
         {
             this.optional = optional;
             this.name = name;
             this.description = description;
-            this.getDefault = getDefault;
+            this.getDefault = getDefault ?? getDefaultValue;
             this.aliases = aliases;
         }
+
+        private static object? getDefaultValue() => default;
 
         public static CommandArg<T> CreateOptional(string name, string description = null!, Func<object?>? getDefault = null, params string[] aliases)
         {

@@ -1,74 +1,41 @@
-﻿using System.Collections.Generic;
-using System.CommandLine;
-using System.CommandLine.Invocation;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Threading;
+using System.Threading.Tasks;
 using JapeCore;
 using JapeService;
 
 namespace JapeDatabase
 {
-    public class Program
+    internal class Program : ConsoleProgram<int, int>
     {
-        private static Args? args;
+        protected override string DefaultLog => "database.log";
+
+        protected override IEnumerable<ICommandArg> Args() => Service.Args;
+
+        private int http;
+        private int https;
 
         [SuppressMessage("ReSharper", "PossibleInvalidOperationException")]
-        private static void Main(string[] args)
+        private static async Task Main(string[] args) => await Run<Program>(args);
+
+        protected override void OnSetup(int http, int https)
         {
-            Log.Init("database");
+            this.http = http;
+            this.https = https;
 
-            RootCommand commandRoot = new();
+            Log.Write("Start");
+        }
 
-            AddArgs(commandRoot, Service.Args);
+        protected override void OnStart()
+        {
+            Log.Write(http.ToString());
+            Log.Write(https.ToString());
 
-            commandRoot.Handler = CommandHandler.Create<int, int>(SetArgs);
-
-            commandRoot.Invoke(args);
-            
-            SpinWait.SpinUntil(() => Program.args != null);
-
-            Database database = new(Program.args.Value.http, 
-                                    Program.args.Value.https);
-
+            Database database = new(http, https);
             database.Start();
 
-            SpinWait.SpinUntil(() => false);
-        }
-
-        private static void SetArgs(int http, int https)
-        {
-            args = new Args(http, https);
-        }
-
-        private static void AddArgs(Command command, IEnumerable<ICommandArg> commandArgs)
-        {
-            foreach (ICommandArg commandArg in commandArgs)
-            {
-                if (commandArg.Optional)
-                {
-                    command.AddOption(new Option(new[] { commandArg.Name }.Concat(commandArg.Aliases).ToArray(), 
-                                                 commandArg.Description, 
-                                                 commandArg.Type, 
-                                                 commandArg.GetDefault));
-                } 
-                else
-                {
-                    command.AddArgument(new Argument(commandArg.Name));
-                }
-            }
-        }
-
-        private readonly struct Args
-        {
-            public readonly int http;
-            public readonly int https;
-
-            public Args(int http, int https)
-            {
-                this.http = http;
-                this.https = https;
-            }
+            WaitShutdown();
         }
     }
 }

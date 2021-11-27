@@ -4,7 +4,7 @@ using JapeService.Responder;
 
 namespace JapeService
 {
-    public abstract class RestService : Service
+    public abstract class RestService : RequestService
     {
         private ResponderList responders = new();
 
