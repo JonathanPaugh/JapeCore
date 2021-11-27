@@ -1,0 +1,11 @@
+.editorconfig
+
+*.DotSettings
+*.DotSettings.user
+
+/.vs/
+/.idea/
+
+**/obj/
+**/bin/
+**/build/
