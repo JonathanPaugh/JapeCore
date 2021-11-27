@@ -9,7 +9,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\JapetheapeCore\JapeCore.csproj" />
+    <ProjectReference Include="..\JapeCore\JapeCore.csproj" />
   </ItemGroup>
 
 </Project>

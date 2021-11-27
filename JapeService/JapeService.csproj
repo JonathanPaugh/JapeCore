@@ -13,8 +13,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\JapetheapeCore\JapeCore.csproj" />
-    <ProjectReference Include="..\JapetheapeHttp\JapeHttp.csproj" />
+    <ProjectReference Include="..\JapeCore\JapeCore.csproj" />
+    <ProjectReference Include="..\JapeHttp\JapeHttp.csproj" />
   </ItemGroup>
 
 </Project>

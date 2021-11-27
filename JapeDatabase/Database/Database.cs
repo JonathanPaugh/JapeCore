@@ -11,11 +11,9 @@ namespace JapeDatabase
         private Responder<byte> Director => GetResponder<byte>(DirectorName);
         private const string DirectorName = "Director";
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "<Pending>")]
         public Responder<string> MongoResponder => GetResponder<string>(MongoResponderName);
         private const string MongoResponderName = "Mongo";
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "<Pending>")]
         public Responder<string> RedisResponder => GetResponder<string>(RedisResponderName);
         private const string RedisResponderName = "Redis";
 
@@ -37,8 +35,8 @@ namespace JapeDatabase
 
         protected override ResponderList Responders(ResponderFactory factory)
         {
-            IResponder mongoResponder = factory.Create("Mongo", data => data.GetString("id")).Responses(MongoResponses).Build();
-            IResponder redisResponder = factory.Create("Redis", data => data.GetString("id")).Responses(RedisResponses).Build();
+            IResponder mongoResponder = factory.Create(MongoResponderName, data => data.GetString("id")).Responses(MongoResponses).Build();
+            IResponder redisResponder = factory.Create(RedisResponderName, data => data.GetString("id")).Responses(RedisResponses).Build();
 
             return new ResponderList
             {

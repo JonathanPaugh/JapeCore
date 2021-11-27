@@ -27,7 +27,7 @@ namespace JapeWeb
             #pragma warning disable 1998
             listener.Use(async (context) => 
             {
-                accessLogger.Write($"({context.Connection.RemoteIpAddress.MapToIPv4()}) => Request: {context.Request.Path}");
+                accessLogger.Log($"({context.Connection.RemoteIpAddress.MapToIPv4()}) => Request: {context.Request.Path}");
             });
             #pragma warning restore 1998
 

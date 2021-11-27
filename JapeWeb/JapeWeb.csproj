@@ -8,12 +8,13 @@
     <PublishSingleFile>true</PublishSingleFile>
     <PublishTrimmed>false</PublishTrimmed>
     <ApplicationManifest>app.manifest</ApplicationManifest>
-    <StartupObject>JapeDatabase.Program</StartupObject>
+    <StartupObject>JapeWeb.Program</StartupObject>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <RuntimeIdentifier>linux-x64</RuntimeIdentifier>
     <DefineConstants>TRACE</DefineConstants>
+    <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -22,28 +23,19 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="ca-certificate.crt" />
-    <None Remove="mongo.cer" />
-    <None Remove="mongo.crt" />
-    <None Remove="mongo.p7b" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Content Include="mongo.crt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="MongoDB.Driver" Version="2.13.1" />
-    <PackageReference Include="StackExchange.Redis" Version="2.2.62" />
     <PackageReference Include="System.CommandLine" Version="2.0.0-beta1.21308.1" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\JapetheapeCore\JapeCore.csproj" />
-    <ProjectReference Include="..\JapetheapeHttp\JapeHttp.csproj" />
-    <ProjectReference Include="..\JapetheapeService\JapeService.csproj" />
+    <ProjectReference Include="..\JapeCore\JapeCore.csproj" />
+    <ProjectReference Include="..\JapeHttp\JapeHttp.csproj" />
+    <ProjectReference Include="..\JapeService\JapeService.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="public\**">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
 </Project>
