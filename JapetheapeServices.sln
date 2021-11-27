@@ -1,0 +1,57 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31025.194
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JapeDatabase", "JapetheapeDatabase\JapeDatabase.csproj", "{629139D4-1E30-412E-9F92-2CAFA3795402}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JapeHttp", "JapetheapeHttp\JapeHttp.csproj", "{150AE95D-4DB3-4D7D-9064-E436279FB80E}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{29FB4FF2-9D55-48EB-B457-3376D7873067}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+	EndProjectSection
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JapeService", "JapetheapeService\JapeService.csproj", "{18B4BD29-ABDC-4AB5-8C74-3DF689567D2A}"
+	ProjectSection(ProjectDependencies) = postProject
+		{150AE95D-4DB3-4D7D-9064-E436279FB80E} = {150AE95D-4DB3-4D7D-9064-E436279FB80E}
+	EndProjectSection
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JapeCore", "JapetheapeCore\JapeCore.csproj", "{01B07423-6566-4E6B-9605-C0B768184C0C}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JapeWeb", "JapetheapeWeb\JapeWeb.csproj", "{356737B6-66F9-4061-9A81-DE2D7AEBD27E}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{629139D4-1E30-412E-9F92-2CAFA3795402}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{629139D4-1E30-412E-9F92-2CAFA3795402}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{629139D4-1E30-412E-9F92-2CAFA3795402}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{629139D4-1E30-412E-9F92-2CAFA3795402}.Release|Any CPU.Build.0 = Release|Any CPU
+		{150AE95D-4DB3-4D7D-9064-E436279FB80E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{150AE95D-4DB3-4D7D-9064-E436279FB80E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{150AE95D-4DB3-4D7D-9064-E436279FB80E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{150AE95D-4DB3-4D7D-9064-E436279FB80E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{18B4BD29-ABDC-4AB5-8C74-3DF689567D2A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{18B4BD29-ABDC-4AB5-8C74-3DF689567D2A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{18B4BD29-ABDC-4AB5-8C74-3DF689567D2A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{18B4BD29-ABDC-4AB5-8C74-3DF689567D2A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{01B07423-6566-4E6B-9605-C0B768184C0C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{01B07423-6566-4E6B-9605-C0B768184C0C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{01B07423-6566-4E6B-9605-C0B768184C0C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{01B07423-6566-4E6B-9605-C0B768184C0C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{356737B6-66F9-4061-9A81-DE2D7AEBD27E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{356737B6-66F9-4061-9A81-DE2D7AEBD27E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{356737B6-66F9-4061-9A81-DE2D7AEBD27E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{356737B6-66F9-4061-9A81-DE2D7AEBD27E}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {2C3040F0-6C48-4FE5-B370-50DAC356EB0C}
+	EndGlobalSection
+EndGlobal
