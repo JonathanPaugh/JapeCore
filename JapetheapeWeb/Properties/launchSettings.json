@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "JapeWeb": {
+      "commandName": "Project",
+      "commandLineArgs": "--http 8000"
+    }
+  }
+}
