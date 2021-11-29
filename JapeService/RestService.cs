@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using JapeService.Responder;
 
 namespace JapeService
@@ -10,10 +11,10 @@ namespace JapeService
 
         protected RestService(int http, int https) : base(http, https) {} 
         
-        internal override void OnStartLow()
+        internal override async Task OnStartLow()
         {
             responders = Responders(new ResponderFactory());
-            base.OnStartLow();
+            await base.OnStartLow();
         }
 
         protected Responder<T> GetResponder<T>(string name) => responders.Get<Responder<T>>(name);

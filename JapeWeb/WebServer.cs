@@ -1,18 +1,20 @@
-﻿using JapeCore;
+﻿using System.Threading;
+using System.Threading.Tasks;
 using JapeHttp;
 using JapeService;
-using Microsoft.Extensions.Logging;
 
 namespace JapeWeb
 {
     public class WebServer : Service
     {
+        protected virtual string LandingPage => "index.html";
+
         protected override string StartString => $"{base.StartString}: {http}";
 
         private readonly int http;
         private readonly int https;
 
-        private Logger accessLogger = Log.Create("access.log");
+        private WebListener listener;
 
         public WebServer(int http, int https) : base(http, https)
         {
@@ -20,17 +22,11 @@ namespace JapeWeb
             this.https = https;
         }
 
+        protected void Use(Middleware middleware) => listener.Use(middleware);
+
         protected override Listener ServiceListener()
         {
-            WebListener listener = new();
-
-            #pragma warning disable 1998
-            listener.Use(async (context) => 
-            {
-                accessLogger.Log($"({context.Connection.RemoteIpAddress.MapToIPv4()}) => Request: {context.Request.Path}");
-            });
-            #pragma warning restore 1998
-
+            listener = new WebListener();
             return listener;
         }
     }

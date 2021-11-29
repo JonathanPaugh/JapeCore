@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Threading.Tasks;
 using JapeCore;
 using JapeHttp;
 
@@ -18,7 +19,7 @@ namespace JapeService
             CommandArg<int>.CreateOptional("--https", "<int> Starts an instance of the service at this https port")
         };
 
-        protected Listener listener;
+        private readonly Listener listener;
 
         [SuppressMessage("ReSharper", "VirtualMemberCallInConstructor")]
         protected Service(int http, int https)
@@ -36,36 +37,35 @@ namespace JapeService
             }
         }
 
-        public void Start()
+        public async Task Start()
         {
+            listener.Construct();
             listener.Start();
 
-            OnStartLow();
+            await OnStartLow();
 
             Log.Write(StartString);
-
-            Console.CancelKeyPress += OnCancelKey;
         }
 
-        public void Stop()
+        public async Task Stop()
         {
-            OnStopLow();
+            listener.Stop();
+
+            await OnStopLow();
             
             Log.Write(StopString);
         }
 
-        internal virtual void OnStartLow() { OnStart(); }
-        internal virtual void OnStopLow() { OnStop(); }
+        internal virtual async Task OnStartLow() => await Task.WhenAll(Task.Run(OnStart), OnStartAsync());
+        internal virtual async Task OnStopLow() => await Task.WhenAll(Task.Run(OnStop), OnStopAsync());
 
         protected virtual void OnStart() {}
+        protected virtual async Task OnStartAsync() => await Task.CompletedTask;
+
         protected virtual void OnStop() {}
+        protected virtual async Task OnStopAsync() => await Task.CompletedTask;
+
 
         protected virtual Listener ServiceListener() => new();
-
-        private void OnCancelKey(object sender, ConsoleCancelEventArgs e)
-        {
-            Console.CancelKeyPress -= OnCancelKey;
-            Stop();
-        }
     }
 }

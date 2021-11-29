@@ -1,6 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using JapeCore;
+using JapeCore.Library;
 using JapeService;
 
 namespace JapeWeb
@@ -12,7 +15,7 @@ namespace JapeWeb
         private int http;
         private int https;
 
-        private static async Task Main(string[] args) => await Run<Program>(args);
+        private static async Task Main(string[] args) => await RunAsync<Program>(args);
 
         protected override IEnumerable<ICommandArg> Args() => Service.Args;
 
@@ -22,11 +25,10 @@ namespace JapeWeb
             this.https = https;
         }
 
-        protected override void OnStart()
+        protected override async Task OnStartAsync()
         {
             WebServer webServer = new(http, https);
-            webServer.Start();
-            WaitShutdown();
+            await webServer.Start();
         }
     }
 }

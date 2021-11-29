@@ -16,7 +16,7 @@ namespace JapeDatabase
         private int http;
         private int https;
 
-        private static async Task Main(string[] args) => await Run<Program>(args);
+        private static async Task Main(string[] args) => await RunAsync<Program>(args);
 
         protected override void OnSetup(int http, int https)
         {
@@ -24,11 +24,10 @@ namespace JapeDatabase
             this.https = https;
         }
 
-        protected override void OnStart()
+        protected override async Task OnStartAsync()
         {
             Database database = new(http, https);
-            database.Start();
-            WaitShutdown();
+            await database.Start();
         }
     }
 }
