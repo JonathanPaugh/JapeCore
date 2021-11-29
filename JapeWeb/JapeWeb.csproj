@@ -31,10 +31,4 @@
     <ProjectReference Include="..\JapeService\JapeService.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Content Include="public\**">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
-
 </Project>

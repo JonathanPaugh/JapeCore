@@ -7,6 +7,7 @@ namespace JapeWeb
 {
     public class WebServer : Service
     {
+        protected virtual string StaticDirectory => "public";
         protected virtual string LandingPage => "index.html";
 
         protected override string StartString => $"{base.StartString}: {http}";
@@ -26,7 +27,7 @@ namespace JapeWeb
 
         protected override Listener ServiceListener()
         {
-            listener = new WebListener();
+            listener = new WebListener(StaticDirectory);
             return listener;
         }
     }

@@ -13,17 +13,17 @@ namespace JapeHttp
     {
         public enum AccessLogMode { None, LogOnly, ConsoleLog }
 
-        private readonly string staticFolder = "public";
-        private string StaticPath => Path.Combine(AppDomain.CurrentDomain.BaseDirectory, staticFolder);
+        private readonly string staticDirectory = "public";
+        private string StaticPath => Path.Combine(AppDomain.CurrentDomain.BaseDirectory, staticDirectory);
 
         private readonly Logger accessLogger = Log.Create("access.log");
         private readonly List<Middleware> middlewareCollection = new();
 
         public AccessLogMode AccessLogging { get; set; } = AccessLogMode.LogOnly;
 
-        public WebListener(string staticFolder = null)
+        public WebListener(string staticDirectory = null)
         {
-            if (staticFolder != null) { this.staticFolder = staticFolder; }
+            if (staticDirectory != null) { this.staticDirectory = staticDirectory; }
         }
 
         public void Use(Middleware middleware)
