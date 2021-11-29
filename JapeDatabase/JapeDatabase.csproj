@@ -22,10 +22,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="mongo.crt" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="MongoDB.Driver" Version="2.13.1" />
     <PackageReference Include="StackExchange.Redis" Version="2.2.62" />
     <PackageReference Include="System.CommandLine" Version="2.0.0-beta1.21308.1" />
