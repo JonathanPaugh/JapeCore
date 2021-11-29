@@ -22,16 +22,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="ca-certificate.crt" />
-    <None Remove="mongo.cer" />
     <None Remove="mongo.crt" />
-    <None Remove="mongo.p7b" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Content Include="mongo.crt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
   </ItemGroup>
 
   <ItemGroup>
