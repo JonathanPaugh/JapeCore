@@ -81,6 +81,10 @@ namespace JapeService.Responder
             {
                 resolution = await RespondPost(new Transfer(transfer.Request, transfer.Response, Execute), data, args);
             }
+            catch (ResolutionException)
+            {
+                throw;
+            }
             catch (ObjectDisposedException)
             {
                 resolution = new Resolution();
@@ -215,10 +219,7 @@ namespace JapeService.Responder
         private async Task<Resolution> Execute(T id, Transfer transfer, JsonData data, params object[] args)
         {
             Resolution resolution = await executors[id].Invoke(transfer, data, args);
-            if (resolution == null)
-            {
-                throw new Exception($"{Name} Request: Null Resolution");
-            }
+            if (resolution == null) { throw new ResolutionException($"{Name} Request: Null Resolution"); }
             return resolution;
         }
     }
