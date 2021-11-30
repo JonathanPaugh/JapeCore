@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using JapeHttp;
+using Microsoft.AspNetCore.Components.Routing;
 
 namespace JapeService.Responder
 {
@@ -8,7 +9,7 @@ namespace JapeService.Responder
     {
         internal class Intercepter
         {
-            internal class Resolution : Responder.Resolution
+            internal class Resolution : JapeHttp.Resolution
             {
                 public bool Intercepted { get; }
 
@@ -21,31 +22,31 @@ namespace JapeService.Responder
 
         internal class RequestIntercepter : Intercepter
         {
-            private readonly Func<Intercept, object[], Task<Responder.Resolution>> onIntercept;
+            private readonly RequestInterception interception;
 
-            internal RequestIntercepter(Func<Intercept, object[], Task<Responder.Resolution>> onIntercept)
+            internal RequestIntercepter(RequestInterception interception)
             {
-                this.onIntercept = onIntercept;
+                this.interception = interception;
             }
 
-            internal async Task<Responder.Resolution> Invoke(Intercept intercept, object[] args)
+            internal async Task<JapeHttp.Resolution> Invoke(Intercept intercept, object[] args)
             {
-                return await onIntercept.Invoke(intercept, args);
+                return await interception.Invoke(intercept, args);
             }
         }
 
         internal class ResponseIntercepter : Intercepter
         {
-            private readonly Func<Intercept, JsonData, object[], Task<Responder.Resolution>> onIntercept;
+            private readonly ResponseInterception interception;
 
-            internal ResponseIntercepter(Func<Intercept, JsonData, object[], Task<Responder.Resolution>> onIntercept)
+            internal ResponseIntercepter(ResponseInterception interception)
             {
-                this.onIntercept = onIntercept;
+                this.interception = interception;
             }
 
-            internal async Task<Responder.Resolution> Invoke(Intercept intercept, JsonData data, object[] args)
+            internal async Task<JapeHttp.Resolution> Invoke(Intercept intercept, JsonData data, object[] args)
             {
-                return await onIntercept.Invoke(intercept, data, args);
+                return await interception.Invoke(intercept, data, args);
             }
         }
     }

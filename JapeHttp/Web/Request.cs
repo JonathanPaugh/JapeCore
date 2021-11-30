@@ -1,71 +1,60 @@
-﻿using System.IO;
-using System.Net;
+﻿using System;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 
 namespace JapeHttp
 {
-    public class Request
+    public abstract class Request
     {
-        public enum Method { Get, Post, Create, Delete }
+        public enum Method { Get, Post, Create, Delete };
 
-        private readonly WebRequest request;
-
-        public Request(string url)
+        public Method GetMethod()
         {
-            request = WebRequest.CreateHttp(url);
-        }
-
-        public Request SetMethod(Method method)
-        {
-            switch (method)
+            return request.Method switch
             {
-                case Method.Get:
-                    request.Method = "GET";
-                    break;
-
-                case Method.Post:
-                    request.Method = "POST";
-                    break;
-
-                case Method.Create:
-                    request.Method = "CREATE";
-                    break;
-
-                case Method.Delete:
-                    request.Method = "DELETE";
-                    break;
-            }
-            return this;
+                "GET" => Method.Get,
+                "POST" => Method.Post,
+                "CREATE" => Method.Create,
+                "DELETE" => Method.Delete,
+                _ => throw new ArgumentException(),
+            };
         }
 
-        public Request SetContentType(string value)
+        protected internal readonly HttpRequest request;
+        protected internal readonly HttpResponse response;
+
+        protected Request(HttpRequest request, HttpResponse response)
         {
-            request.ContentType = value;
-            return this;
+            this.request = request;
+            this.response = response;
         }
 
-        public Request AddHeader(string key, string value)
+        public abstract Task<Resolution> Complete(Status.SuccessCode code);
+        public abstract Task<Resolution> Complete(Status.SuccessCode code, string data);
+        public abstract Task<Resolution> Complete(Status.SuccessCode code, JsonData data);
+
+        public abstract Task<Resolution> Abort(Status.ErrorCode code);
+
+        protected async Task Close(int statusCode)
         {
-            request.Headers.Add(key, value);
-            return this;
+            response.StatusCode = statusCode;
+            await response.CompleteAsync();
         }
 
-        public Request Write(string data)
+        protected async Task Close(int statusCode, string data)
         {
-            using (StreamWriter writer = new(request.GetRequestStream()))
-            {
-                writer.Write(data);
-            }
-            return this;
+            response.StatusCode = statusCode;
+            await response.Write(data);
+            await response.CompleteAsync();
         }
 
-        public Request WriteJson(JsonData data)
+        protected async Task Close(int statusCode, JsonData data)
         {
-            return Write(data.Serialize());
+            response.StatusCode = statusCode;
+            await response.WriteJson(data);
+            await response.CompleteAsync();
         }
 
-        public Response GetResponse()
-        {
-            return new Response(request);
-        }
+        protected static Resolution GetResolution() => new();
     }
 }

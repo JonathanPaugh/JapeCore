@@ -1,21 +1,14 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using JapeHttp;
 using Microsoft.AspNetCore.Http;
 
-namespace JapeService.Responder
+namespace JapeHttp
 {
-    public partial class Responder<T>
+    public partial class WebListener
     {
-        public class Transfer : Exchange, ITransfer
+        public class Request : JapeHttp.Request
         {
-            public HttpRequest Request => request;
-            public HttpResponse Response => response;
-
-            internal Transfer(HttpRequest request, 
-                              HttpResponse response, 
-                              Caller caller) 
-                              : base(request, response, caller) {}
+            internal Request(HttpRequest request, HttpResponse response) : base(request, response) {}
 
             public override async Task<Resolution> Complete(Status.SuccessCode code)
             {
@@ -40,11 +33,7 @@ namespace JapeService.Responder
                 await Close((int)code);
                 return GetResolution();
             }
-
-            public async Task<Resolution> Redirect(T id, Transfer transfer, JsonData data, object[] args)
-            {
-                return await Invoke(id, transfer, data, args);
-            }
         }
     }
+
 }

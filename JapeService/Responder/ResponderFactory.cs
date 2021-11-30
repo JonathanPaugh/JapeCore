@@ -10,7 +10,7 @@ namespace JapeService.Responder
         internal ResponderFactory() {}
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "<Pending>")]
-        public Builder<T> Create<T>(string name, Func<JsonData, T> indexer)
+        public Builder<T> Create<T>(string name, Responder<T>.Indexer indexer)
         {
             return new Builder<T>(name, indexer);
         }
@@ -19,29 +19,29 @@ namespace JapeService.Responder
         {
             private readonly Responder<T> responder;
 
-            internal Builder(string name, Func<JsonData, T> indexer)
+            internal Builder(string name, Responder<T>.Indexer indexer)
             {
                 responder = new Responder<T>(name, indexer);
             }
 
             public Builder<T> Responses(ResponseBank<T> responses)
             {
-                foreach (KeyValuePair<T, Func<Responder<T>.Transfer, JsonData, object[], Task<Resolution>>> response in responses)
+                foreach (KeyValuePair<T, Responder<T>.Response> response in responses)
                 {
                     responder.Add(response.Key, response.Value);
                 }
                 return this;
             }
 
-            public Builder<T> InterceptRequest(Func<Responder<T>.Intercept, object[], Task<Resolution>> onIntercept)
+            public Builder<T> InterceptRequest(Responder<T>.RequestInterception interception)
             {
-                responder.InterceptRequest(onIntercept);
+                responder.InterceptRequest(interception);
                 return this;
             }
 
-            public Builder<T> InterceptResponse(Func<Responder<T>.Intercept, JsonData, object[], Task<Resolution>> onIntercept)
+            public Builder<T> InterceptResponse(Responder<T>.ResponseInterception interception)
             {
-                responder.InterceptResponse(onIntercept);
+                responder.InterceptResponse(interception);
                 return this;
             }
 

@@ -3,11 +3,11 @@ using System.Net;
 
 namespace JapeHttp
 {
-    public class Response
+    public class ApiResponse
     {
         private readonly string value;
 
-        public Response(WebRequest request)
+        public ApiResponse(WebRequest request)
         {
             using WebResponse response = request.GetResponse();
             using StreamReader reader = new(response.GetResponseStream());

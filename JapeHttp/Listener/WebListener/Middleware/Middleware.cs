@@ -6,17 +6,20 @@ namespace JapeHttp
 {
     public class Middleware
     {
-        private readonly Func<HttpContext, Result> middlewareSync;
-        private readonly Func<HttpContext, Task<Result>> middlewareAsync;
+        private readonly Response middlewareSync;
+        private readonly ResponseAsync middlewareAsync;
+
+        public delegate Result Response(HttpContext context);
+        public delegate Task<Result> ResponseAsync(HttpContext context);
 
         public bool Skip { get; set; }
 
-        public Middleware(Func<HttpContext, Result> middleware)
+        private Middleware(Response middleware)
         {
             middlewareSync = middleware;
         }
 
-        public Middleware(Func<HttpContext, Task<Result>> middleware)
+        private Middleware(ResponseAsync middleware)
         {
             middlewareAsync = middleware;
         }
@@ -31,19 +34,22 @@ namespace JapeHttp
             if (middlewareSync != null)
             {
                 Result result = middlewareSync.Invoke(context);
+                if (result == null) { throw new MiddlewareException("Null Result"); }
                 return await Task.FromResult(result);
             }
 
             if (middlewareAsync != null)
             {
-                return await middlewareAsync.Invoke(context);
+                Result result = await middlewareAsync.Invoke(context);
+                if (result == null) { throw new MiddlewareException("Null Result"); }
+                return result;
             }
 
-            throw new Exception("Invalid Middleware");
+            throw new MiddlewareException("Invalid State");
         }
 
-        public static Middleware Use(Func<HttpContext, Result> middleware) => new(middleware);
-        public static Middleware UseAsync(Func<HttpContext, Task<Result>> middleware) => new(middleware);
+        public static Middleware Use(Response middleware) => new(middleware);
+        public static Middleware UseAsync(ResponseAsync middleware) => new(middleware);
 
         public class Result
         {

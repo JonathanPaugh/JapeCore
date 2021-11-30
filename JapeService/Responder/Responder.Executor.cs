@@ -8,16 +8,16 @@ namespace JapeService.Responder
     {
         private class Executor
         {
-            private readonly Func<Transfer, JsonData, object[], Task<Resolution>> caller;
+            private readonly Response response;
 
-            public Executor(Func<Transfer, JsonData, object[], Task<Resolution>> caller)
+            public Executor(Response response)
             {
-                this.caller = caller; 
+                this.response = response; 
             }
 
             internal async Task<Resolution> Invoke(Transfer transfer, JsonData data, object[] args)
             {
-                return await caller.Invoke(transfer, data, args);
+                return await response.Invoke(transfer, data, args);
             }
         }
     }

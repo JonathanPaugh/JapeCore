@@ -75,9 +75,7 @@ namespace JapeCore
             }
         }
         
-        public static string Stamp(string value)
-        {
-            return $"{DateTime.UtcNow:u}: {value}";
-        }
+        public static string Stamp(string value) => $"{Timestamp()}: {value}";
+        public static string Timestamp() => $"{DateTime.UtcNow:u}";
     }
 }

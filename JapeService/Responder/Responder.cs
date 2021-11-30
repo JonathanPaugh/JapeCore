@@ -24,7 +24,7 @@ namespace JapeService.Responder
     {
         public string Name { get; }
         
-        private readonly Func<JsonData, T> indexer;
+        private readonly Indexer indexer;
 
         #pragma warning disable CS8714
         private readonly Dictionary<T, Executor> executors = new();
@@ -33,7 +33,14 @@ namespace JapeService.Responder
         private readonly List<RequestIntercepter> requestIntercepters = new();
         private readonly List<ResponseIntercepter> responseIntercepters = new();
 
-        public Responder(string name, Func<JsonData, T> indexer)
+        public delegate Task<Resolution> Response(Transfer transfer, JsonData data, object[] args);
+
+        public delegate Task<Resolution> RequestInterception(Intercept intercept, object[] args);
+        public delegate Task<Resolution> ResponseInterception(Intercept intercept, JsonData data, object[] args);
+
+        public delegate T Indexer(JsonData data);
+
+        public Responder(string name, Indexer indexer)
         {
             Name = name;
             this.indexer = indexer;
@@ -43,26 +50,24 @@ namespace JapeService.Responder
 
         public T GetId(JsonData data) => indexer.Invoke(data);
 
-        public void Add(T id, Func<Transfer, JsonData, object[], Task<Resolution>> response) => executors.Add(id, new Executor(response));
+        public void Add(T id, Response response) => executors.Add(id, new Executor(response));
         public void Remove(T id) => executors.Remove(id);
 
         public bool Contains(T id) => executors.ContainsKey(id);
 
-        public void InterceptRequest(Func<Intercept, object[], Task<Resolution>> onIntercept) => requestIntercepters.Add(new RequestIntercepter(onIntercept));
-        public void InterceptResponse(Func<Intercept, JsonData, object[], Task<Resolution>> onIntercept) => responseIntercepters.Add(new ResponseIntercepter(onIntercept));
+        public void InterceptRequest(RequestInterception interception) => requestIntercepters.Add(new RequestIntercepter(interception));
+        public void InterceptResponse(ResponseInterception interception) => responseIntercepters.Add(new ResponseIntercepter(interception));
 
         private bool Intercepted(Resolution resolution)
         {
             if (resolution == null)
             {
-                Log.Write($"{Name} Request Warning: Null Resolution");
-                return false;
+                throw new ResolutionException($"{Name} Request: Null Resolution");
             }
 
             if (resolution is not Intercepter.Resolution interceptorResolution)
             {
-                Log.Write($"{Name} Request Warning: Resolution Wrong Type");
-                return false;
+                throw new ResolutionException($"{Name} Request: Invalid Resolution Type");
             }
 
             return interceptorResolution.Intercepted;
@@ -78,12 +83,24 @@ namespace JapeService.Responder
             }
             catch (ObjectDisposedException)
             {
+                resolution = new Resolution();
                 Log.Write($"{Name} Request Error: Disposed");
+            }
+            catch (ResponderDataException)
+            {
+                resolution = new Resolution();
+                Log.Write($"{Name} Request Error: Invalid Data");
             }
             catch (Exception exception)
             {
+                resolution = new Resolution();
                 Log.Write($"{Name} Request Error: Unknown (Information Logged)");
                 Log.WriteLog(exception.ToString());
+            }
+
+            if (resolution == null)
+            {
+                throw new ResolutionException($"{Name} Request: Null Resolution");
             }
 
             return resolution;
@@ -106,7 +123,6 @@ namespace JapeService.Responder
             }
         }
 
-        [SuppressMessage("ReSharper", "LoopCanBeConvertedToQuery")]
         private async Task RespondLow(HttpRequest request, HttpResponse response, params object[] args)
         {
             Transfer transfer = new(request, response, Execute);
@@ -121,8 +137,6 @@ namespace JapeService.Responder
 
             JsonData data = await RespondData(transfer);
 
-            if (data == null) { return; }
-
             foreach (ResponseIntercepter intercepter in responseIntercepters)
             {
                 Resolution resolution = await intercepter.Invoke(new Intercept(request, response, Execute), data, args);
@@ -134,13 +148,16 @@ namespace JapeService.Responder
 
         private async Task<JsonData> RespondData(Transfer transfer)
         {
-            JsonData data = await GetData(transfer.request);
+            JsonData data;
 
-            if (data == null)
+            try
             {
-                Log.Write($"{Name} Request Error: Empty Data");
+                data = await GetData(transfer.request);
+            }
+            catch (ResponderDataException)
+            {
                 await transfer.Abort(Status.ErrorCode.BadRequest);
-                return data;
+                throw;
             }
 
             return data;
@@ -177,17 +194,19 @@ namespace JapeService.Responder
 
         private async Task<JsonData> GetData(HttpRequest request)
         {
-            JsonData data = null;
+            JsonData data;
 
             try
             {
                 data = await request.ReadJson();
             } 
-            catch (ObjectDisposedException) { throw; }
-            catch (Exception)
+            catch (ObjectDisposedException)
             {
-                Log.Write($"{Name} Request Error: Cannot Read Data");
-                return data;
+                throw;
+            }
+            catch (Exception exception)
+            {
+                throw new ResponderDataException(exception);
             }
 
             return data;
@@ -198,7 +217,7 @@ namespace JapeService.Responder
             Resolution resolution = await executors[id].Invoke(transfer, data, args);
             if (resolution == null)
             {
-                Log.Write($"{Name} Request Warning: Null Resolution");
+                throw new Exception($"{Name} Request: Null Resolution");
             }
             return resolution;
         }

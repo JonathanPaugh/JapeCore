@@ -11,9 +11,9 @@
             Key = key;
         }
 
-        public Request Request(string request)
+        public ApiRequest Request(string request)
         {
-            return new Request(url + request);
+            return new ApiRequest(url + request);
         }
     }
 }

@@ -11,7 +11,7 @@ namespace JapeService.Responder
         {
             internal Intercept(HttpRequest request, 
                                HttpResponse response, 
-                               Func<T, Transfer, JsonData, object[], Task<Resolution>> caller) 
+                               Caller caller) 
                                : base(request, response, caller) {}
 
             public override async Task<Resolution> Complete(Status.SuccessCode code)

@@ -2,8 +2,6 @@
 {
     public static class Status
     {
-        
-
         public enum SuccessCode
         {
             Ok = 200,
