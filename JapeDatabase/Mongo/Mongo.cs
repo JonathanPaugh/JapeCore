@@ -9,19 +9,20 @@ namespace JapeDatabase
 {
     public partial class Mongo
     {
-        private const string Host = "localhost";
-        private const int Port = 27017;
-        
         private const ConnectionStringScheme Scheme = ConnectionStringScheme.MongoDB;
 
-        private const string Database = "admin";
-        private const string User = "default";
-        private const string Password = "3BBW8IJXuR6Ig8MDaOC6ARN4MQr9Tnpu4XBUwJdc9t3W8EIjWN7+YGkuefwB+hNBXpngUvdMQJ2/tj1H";
+        internal const string Host = "localhost";
+        internal const int Port = 27017;
 
-        private const string ReplicaSet = null;
+        internal const string User = "default";
+        internal const string Password = "3BBW8IJXuR6Ig8MDaOC6ARN4MQr9Tnpu4XBUwJdc9t3W8EIjWN7+YGkuefwB+hNBXpngUvdMQJ2/tj1H";
 
-        private const bool UseSSL = false;
-        private const bool InsecureSSL = true;
+        internal const string Database = "admin";
+
+        internal const string ReplicaSet = null;
+
+        internal const bool UseSsl = false;
+        internal const bool InsecureSsl = true;
 
         private static string CertificateFile => Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "mongo.crt");
 
@@ -30,28 +31,34 @@ namespace JapeDatabase
         private Mongo(MongoClient connection)
         {
             this.connection = connection;
-        } 
-        
-        public static Mongo Connect()
+        }
+
+        public static Mongo Connect(string connectionString)
+        {
+            MongoClientSettings settings = MongoClientSettings.FromConnectionString(connectionString);
+            return new(new MongoClient(settings));
+        }
+
+        public static Mongo Connect(string host, int port, string user, string password, string database, bool useSSL, string replicaSet)
         {
             MongoClientSettings settings = new()
             {
                 Scheme = Scheme,
-                Server = new MongoServerAddress(Host, Port),
-                Credential = MongoCredential.CreateCredential(Database, User, Password),
+                Server = new MongoServerAddress(host, port),
+                Credential = MongoCredential.CreateCredential(database, user, password),
             };
 
             #pragma warning disable CS0162 // Unreachable code detected
 
-            if (ReplicaSet != null)
+            if (replicaSet != null)
             {
                 settings.ReplicaSetName = ReplicaSet;
             }
 
-            if (UseSSL)
+            if (useSSL)
             {
                 settings.UseTls = true;
-                settings.AllowInsecureTls = InsecureSSL;
+                settings.AllowInsecureTls = InsecureSsl;
 
                 X509Certificate2Collection certificates = new(new []
                 {

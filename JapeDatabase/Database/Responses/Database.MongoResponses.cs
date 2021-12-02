@@ -7,6 +7,7 @@ using JapeService;
 using JapeService.Responder;
 using MongoDB.Bson;
 using MongoDB.Driver;
+using System.Linq;
 
 namespace JapeDatabase
 {
@@ -14,11 +15,11 @@ namespace JapeDatabase
     {
         private ResponseBank<string> MongoResponses => new()
         {
-            { "Get", ResponseMongoGet },
-            { "Insert", ResponseMongoInsert },
-            { "Update", ResponseMongoUpdate },
-            { "Remove", ResponseMongoRemove },
-            { "Delete", ResponseMongoDelete },
+            { "get", ResponseMongoGet },
+            { "insert", ResponseMongoInsert },
+            { "update", ResponseMongoUpdate },
+            { "remove", ResponseMongoRemove },
+            { "delete", ResponseMongoDelete },
         };
 
         public async Task<Resolution> ResponseMongoGet(Responder<string>.Transfer transfer, JsonData data, object[] args)

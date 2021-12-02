@@ -39,21 +39,21 @@ namespace JapeService
 
         public async Task Start()
         {
+            Log.Write(StartString);
+
             listener.Construct();
             listener.Start();
 
             await OnStartLow();
-
-            Log.Write(StartString);
         }
 
         public async Task Stop()
         {
             listener.Stop();
 
-            await OnStopLow();
-            
             Log.Write(StopString);
+
+            await OnStopLow();
         }
 
         internal virtual async Task OnStartLow() => await Task.WhenAll(Task.Run(OnStart), OnStartAsync());

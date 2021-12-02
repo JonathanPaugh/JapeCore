@@ -26,7 +26,7 @@ namespace JapeDatabase
 
         protected override async Task OnStartAsync()
         {
-            Database database = new(http, https);
+            Database database = new(http, https, true, true);
             await database.Start();
         }
     }

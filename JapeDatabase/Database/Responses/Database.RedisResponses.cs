@@ -12,13 +12,13 @@ namespace JapeDatabase
     {
         private ResponseBank<string> RedisResponses => new()
         {
-            { "Get", ResponseRedisGet },
-            { "Set", ResponseRedisSet },
-            { "Remove", ResponseRedisRemove },
-            { "Subscribe", ResponseRedisSubscribe },
-            { "Unsubscribe", ResponseRedisUnsubscribe },
-            { "Publish", ResponseRedisPublish },
-            { "Receive", ResponseRedisReceive },
+            { "get", ResponseRedisGet },
+            { "set", ResponseRedisSet },
+            { "remove", ResponseRedisRemove },
+            { "subscribe", ResponseRedisSubscribe },
+            { "unsubscribe", ResponseRedisUnsubscribe },
+            { "publish", ResponseRedisPublish },
+            { "receive", ResponseRedisReceive },
         };
 
         public async Task<Resolution> ResponseRedisGet(Responder<string>.Transfer transfer, JsonData data, object[] args)

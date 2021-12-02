@@ -5,37 +5,37 @@ namespace JapeDatabase
 {
     public class Redis
     {
-        private const string Host = "localhost";
-        private const int Port = 6379;
+        internal const string Host = "localhost";
+        internal const int Port = 6379;
 
-        private const string User = "default";
-        private const string Password = "F9jXYBrqX4inwUPclA9HezWEb/YYCOjl8D7obBrZYV62Vx5SO90K3z+PpkbW8Z1hbOAOyF+fCyJXbACQ";
+        internal const string User = "default";
+        internal const string Password = "F9jXYBrqX4inwUPclA9HezWEb/YYCOjl8D7obBrZYV62Vx5SO90K3z+PpkbW8Z1hbOAOyF+fCyJXbACQ";
 
-        private const bool UseSSL = false;
+        internal const bool UseSsl = false;
+
+        internal readonly Dictionary<string, Subscription> subscriptions = new();
 
         private readonly ConnectionMultiplexer connection;
-
-        public readonly Dictionary<string, Subscription> subscriptions = new();
 
         private Redis(ConnectionMultiplexer connection)
         {
             this.connection = connection;
         }
 
-        public static Redis Connect()
+        public static Redis Connect(string host, int port, string user, string password, bool useSsl)
         {
-            ConfigurationOptions settings = ConfigurationOptions.Parse($"{Host}:{Port}");
+            ConfigurationOptions settings = ConfigurationOptions.Parse($"{host}:{port}");
 
             settings.AllowAdmin = true;
 
-            if (User != null)
+            if (user != null)
             {
-                settings.User = User;
+                settings.User = user;
             }
 
-            settings.Password = Password;
+            settings.Password = password;
 
-            settings.Ssl = UseSSL;
+            settings.Ssl = useSsl;
 
             return new Redis(ConnectionMultiplexer.Connect(settings));
         }

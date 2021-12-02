@@ -14,6 +14,11 @@ namespace JapeHttp
             data = new Dictionary<string, JsonElement>();
         }
 
+        public JsonData(JsonData data)
+        {
+            this.data = Deserialize(data.Serialize());
+        }
+
         internal JsonData(string json)
         {
             data = Deserialize(json);
@@ -63,15 +68,8 @@ namespace JapeHttp
         public IEnumerable<decimal> GetDecimalArray(string key) => data[key].EnumerateArray().Select(e => e.GetDecimal());
         public IEnumerable<string> GetStringArray(string key) => data[key].EnumerateArray().Select(e => e.GetString());
 
-        public JsonData Extract(string key, params string[] properties)
-        {
-             return new JsonData(Find(key, properties).GetRawText());
-        }
-
-        public IEnumerable<JsonData> ExtractArray(string key, params string[] properties)
-        {
-            return Find(key, properties).EnumerateArray().Select(e => new JsonData(e.GetRawText()));
-        }
+        public JsonData Extract(string key, params string[] properties) => new JsonData(Find(key, properties).GetRawText());
+        public IEnumerable<JsonData> ExtractArray(string key, params string[] properties) => Find(key, properties).EnumerateArray().Select(e => new JsonData(e.GetRawText()));
 
         private JsonElement Find(string key, params string[] properties)
         {
@@ -92,6 +90,11 @@ namespace JapeHttp
 
         private static JsonElement DeserializeElement(object data)
         {
+            if (data.GetType() == typeof(JsonData))
+            {
+                data = ((JsonData)data).Serialize();
+            }
+
             byte[] bytes = JsonSerializer.SerializeToUtf8Bytes(data);
             Utf8JsonReader reader = new(bytes);
             using JsonDocument document = JsonDocument.ParseValue(ref reader);
