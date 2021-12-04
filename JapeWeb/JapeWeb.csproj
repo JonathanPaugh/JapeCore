@@ -27,6 +27,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\JapeCore\JapeCore.csproj" />
+    <ProjectReference Include="..\JapeDatabase\JapeDatabase.csproj" />
     <ProjectReference Include="..\JapeHttp\JapeHttp.csproj" />
     <ProjectReference Include="..\JapeService\JapeService.csproj" />
   </ItemGroup>

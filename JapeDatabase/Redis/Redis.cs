@@ -22,6 +22,11 @@ namespace JapeDatabase
             this.connection = connection;
         }
 
+        public static Redis Connect(string connectionString)
+        {
+            return new Redis(ConnectionMultiplexer.Connect(connectionString));
+        }
+
         public static Redis Connect(string host, int port, string user, string password, bool useSsl)
         {
             ConfigurationOptions settings = ConfigurationOptions.Parse($"{host}:{port}");

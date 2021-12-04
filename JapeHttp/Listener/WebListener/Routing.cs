@@ -1,5 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
@@ -14,7 +13,7 @@ namespace JapeHttp
         private readonly Response response;
         private readonly Method method;
 
-        public delegate Task<Middleware.Result> Response(WebListener.Request request);
+        public delegate Task<Request.Result> Response(WebListener.Request request);
 
         private Routing(string path, Response response, Method method)
         {

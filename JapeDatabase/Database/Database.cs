@@ -8,6 +8,9 @@ namespace JapeDatabase
 {
     public partial class Database : RestService
     {
+        public const byte MongoIndex = 0;
+        public const byte RedisIndex = 1;
+
         private Responder<byte> Director => GetResponder<byte>(DirectorName);
         private const string DirectorName = "Director";
 
@@ -15,48 +18,32 @@ namespace JapeDatabase
         private const string MongoResponderName = "Mongo";
 
         public Responder<string> RedisResponder => GetResponder<string>(RedisResponderName);
-        private const string RedisResponderName = "Redis";
-
-        public const byte MongoIndex = 0;
-        public const byte RedisIndex = 1;
-
-        private Mongo mongo;
-        private Redis redis;
+        private const string RedisResponderName = "Redis"; 
 
         private readonly bool useMongo;
         private readonly bool useRedis;
+
+        protected Mongo mongo;
+        protected Redis redis;
 
         public Database(int http, int https, bool useMongo, bool useRedis) : base(http, https) {
             this.useMongo = useMongo;
             this.useRedis = useRedis;
         }
 
-        public void UseMongo(string host, int port, string user, string password, string database, bool useSsl = false, string replicaSet = null)
+        protected override async Task OnStartAsync()
         {
-            mongo = Mongo.Connect(host, port, user, password, database, useSsl, replicaSet);
-        }
-
-        public void UseMongo(string connectionString)
-        {
-            mongo = Mongo.Connect(connectionString);
-        }
-
-        public void UseRedis(string host, int port, string user, string password, bool useSsl = false)
-        {
-            redis = Redis.Connect(host, port, user, password, useSsl);
-        }
-
-        protected override void OnStart()
-        {
-            if (useMongo && mongo == null)
+            if (useMongo)
             {
-                UseMongo(Mongo.Host, Mongo.Port, Mongo.User, Mongo.Password, Mongo.Database, Mongo.UseSsl, Mongo.ReplicaSet);
+                mongo = Mongo.Connect(Mongo.Host, Mongo.Port, Mongo.User, Mongo.Password, Mongo.Database, Mongo.UseSsl, Mongo.ReplicaSet);
             }
 
-            if (useRedis && redis == null)
+            if (useRedis)
             {
-                UseRedis(Redis.Host, Redis.Port, Redis.User, Redis.Password, Redis.UseSsl);
+                redis = Redis.Connect(Redis.Host, Redis.Port, Redis.User, Redis.Password, Redis.UseSsl);
             }
+
+            await Task.CompletedTask;
         }
 
         protected override async Task OnRequest(HttpContext context)

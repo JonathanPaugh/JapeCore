@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using System.Net;
+using System.Threading.Tasks;
 
 namespace JapeHttp
 {
@@ -61,9 +62,7 @@ namespace JapeHttp
             return Write(data.Serialize());
         }
 
-        public ApiResponse GetResponse()
-        {
-            return new ApiResponse(request);
-        }
+        public ApiResponse GetResponse() => ApiResponse.FromRequest(request);
+        public async Task<ApiResponse> GetResponseAsync() => await ApiResponse.FromRequestAsync(request);
     }
 }

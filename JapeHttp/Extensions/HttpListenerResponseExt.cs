@@ -12,9 +12,20 @@ namespace JapeHttp
             await writer.WriteAsync(data);
         }
 
+        public static async Task Stream(this HttpResponse response, string data)
+        {
+            await using StreamWriter writer = new(response.Body, null, -1, true);
+            await writer.WriteAsync(data);
+        }
+
         public static async Task WriteJson(this HttpResponse response, JsonData data)
         {
             await Write(response, data.Serialize());
+        }
+
+        public static async Task StreamJson(this HttpResponse response, JsonData data)
+        {
+            await Stream(response, data.Serialize());
         }
     }
 }

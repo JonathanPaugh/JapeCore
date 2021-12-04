@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Net;
 using System.Threading.Tasks;
 using JapeCore;
 using Microsoft.AspNetCore.Builder;
@@ -129,6 +130,7 @@ namespace JapeHttp
         private Task OnRequest(HttpContext context)
         {   
             LogAccess(context);
+            context.Request.EnableBuffering();
             return Task.CompletedTask;
         }
 

@@ -36,7 +36,7 @@ namespace JapeDatabase
         public static Mongo Connect(string connectionString)
         {
             MongoClientSettings settings = MongoClientSettings.FromConnectionString(connectionString);
-            return new(new MongoClient(settings));
+            return new Mongo(new MongoClient(settings));
         }
 
         public static Mongo Connect(string host, int port, string user, string password, string database, bool useSSL, string replicaSet)

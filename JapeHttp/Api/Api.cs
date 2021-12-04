@@ -15,10 +15,5 @@
         {
             return new ApiRequest(url + request);
         }
-
-        public ApiRequest BaseRequest()
-        {
-            return new ApiRequest(url);
-        }
     }
 }

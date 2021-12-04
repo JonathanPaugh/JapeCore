@@ -20,8 +20,8 @@ namespace JapeHttp
             };
         }
 
-        protected internal readonly HttpRequest request;
-        protected internal readonly HttpResponse response;
+        internal readonly HttpRequest request;
+        internal readonly HttpResponse response;
 
         protected Request(HttpRequest request, HttpResponse response)
         {
