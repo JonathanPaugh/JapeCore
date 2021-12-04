@@ -54,7 +54,7 @@ namespace JapeHttp
         public class Result
         {
             internal bool Prevented { get; }
-            internal bool Skipped { get; private set; }
+            internal bool Skipped { get; private init; }
 
             public static Result Prevent => new(true);
             public static Result Continue => new(false);

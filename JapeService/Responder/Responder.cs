@@ -62,12 +62,12 @@ namespace JapeService.Responder
         {
             if (resolution == null)
             {
-                throw new ResolutionException($"{Name} Request: Null Resolution");
+                throw new ResultException($"{Name} Request: Null Resolution");
             }
 
             if (resolution is not Intercepter.Resolution interceptorResolution)
             {
-                throw new ResolutionException($"{Name} Request: Invalid Resolution Type");
+                throw new ResultException($"{Name} Request: Invalid Resolution Type");
             }
 
             return interceptorResolution.Intercepted;
@@ -81,7 +81,7 @@ namespace JapeService.Responder
             {
                 resolution = await RespondPost(new Transfer(transfer.Request, transfer.Response, Execute), data, args);
             }
-            catch (ResolutionException)
+            catch (ResultException)
             {
                 throw;
             }
@@ -104,7 +104,7 @@ namespace JapeService.Responder
 
             if (resolution == null)
             {
-                throw new ResolutionException($"{Name} Request: Null Resolution");
+                throw new ResultException($"{Name} Request: Null Resolution");
             }
 
             return resolution;
@@ -219,7 +219,7 @@ namespace JapeService.Responder
         private async Task<Resolution> Execute(T id, Transfer transfer, JsonData data, params object[] args)
         {
             Resolution resolution = await executors[id].Invoke(transfer, data, args);
-            if (resolution == null) { throw new ResolutionException($"{Name} Request: Null Resolution"); }
+            if (resolution == null) { throw new ResultException($"{Name} Request: Null Resolution"); }
             return resolution;
         }
     }
