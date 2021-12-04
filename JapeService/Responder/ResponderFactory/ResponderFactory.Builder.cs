@@ -1,20 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using JapeHttp;
+﻿using System.Collections.Generic;
 
 namespace JapeService.Responder
 {
-    public class ResponderFactory
+    public partial class ResponderFactory
     {
-        internal ResponderFactory() {}
-
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "<Pending>")]
-        public Builder<T> Create<T>(string name, Responder<T>.Indexer indexer)
-        {
-            return new Builder<T>(name, indexer);
-        }
-
         public class Builder<T>
         {
             private readonly Responder<T> responder;

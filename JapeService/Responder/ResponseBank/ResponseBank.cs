@@ -1,11 +1,7 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
-using System.Threading.Tasks;
-using JapeHttp;
-using JapeService.Responder;
 
-namespace JapeService
+namespace JapeService.Responder
 {
     public class ResponseBank<T> : IEnumerable
     {

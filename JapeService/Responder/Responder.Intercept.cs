@@ -7,7 +7,7 @@ namespace JapeService.Responder
 {
     public partial class Responder<T>
     {
-        public class Intercept : Exchange, ICloseableRequest<Intercept.Result>
+        public partial class Intercept : Exchange, ICloseableRequest<Intercept.Result>
         {
             internal Intercept(HttpRequest request, 
                                HttpResponse response, 
@@ -48,16 +48,6 @@ namespace JapeService.Responder
             public Result Pass()
             {
                 return new Result(false);
-            }
-
-            public new class Result : Request.Result
-            {
-                public bool Intercepted { get; }
-
-                internal Result(bool intercepted)
-                {
-                    Intercepted = intercepted;
-                }
             }
         }
     }
