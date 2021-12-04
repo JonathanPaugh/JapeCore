@@ -7,20 +7,7 @@ namespace JapeService.Responder
 {
     public partial class Responder<T>
     {
-        internal class Intercepter
-        {
-            internal class Result : Request.Result
-            {
-                public bool Intercepted { get; }
-
-                internal Result(bool intercepted)
-                {
-                    Intercepted = intercepted;
-                }
-            }
-        }
-
-        internal class RequestIntercepter : Intercepter
+        internal class RequestIntercepter
         {
             private readonly RequestInterception interception;
 
@@ -29,13 +16,13 @@ namespace JapeService.Responder
                 this.interception = interception;
             }
 
-            internal async Task<Request.Result> Invoke(Intercept intercept, object[] args)
+            internal async Task<Intercept.Result> Invoke(Intercept intercept, object[] args)
             {
                 return await interception.Invoke(intercept, args);
             }
         }
 
-        internal class ResponseIntercepter : Intercepter
+        internal class ResponseIntercepter
         {
             private readonly ResponseInterception interception;
 
@@ -44,7 +31,7 @@ namespace JapeService.Responder
                 this.interception = interception;
             }
 
-            internal async Task<Request.Result> Invoke(Intercept intercept, JsonData data, object[] args)
+            internal async Task<Intercept.Result> Invoke(Intercept intercept, JsonData data, object[] args)
             {
                 return await interception.Invoke(intercept, data, args);
             }

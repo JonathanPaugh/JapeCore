@@ -10,25 +10,25 @@ namespace JapeHttp
         {
             internal Request(HttpRequest request, HttpResponse response) : base(request, response) {}
 
-            public override async Task<Result> Complete(Status.SuccessCode code)
+            public async Task<Result> Complete(Status.SuccessCode code)
             {
                 await Close((int)code);
                 return GenerateResult();
             }
 
-            public override async Task<Result> Complete(Status.SuccessCode code, string data)
+            public async Task<Result> Complete(Status.SuccessCode code, string data)
             {
                 await Close((int)code, data);
                 return GenerateResult();
             }
 
-            public override async Task<Result> Complete(Status.SuccessCode code, JsonData data)
+            public async Task<Result> Complete(Status.SuccessCode code, JsonData data)
             {
                 await Close((int)code, data);
                 return GenerateResult();
             }
 
-            public override async Task<Result> Abort(Status.ErrorCode code)
+            public async Task<Result> Abort(Status.ErrorCode code)
             {
                 await Close((int)code);
                 return GenerateResult();

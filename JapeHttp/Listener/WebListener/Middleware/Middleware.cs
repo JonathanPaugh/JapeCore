@@ -10,8 +10,8 @@ namespace JapeHttp
         private readonly Response middlewareSync;
         private readonly ResponseAsync middlewareAsync;
 
-        public delegate Result Response(Request request);
-        public delegate Task<Result> ResponseAsync(Request request);
+        public delegate Request.Result Response(Request request);
+        public delegate Task<Request.Result> ResponseAsync(Request request);
 
         public bool Skip { get; set; }
 
@@ -25,25 +25,25 @@ namespace JapeHttp
             middlewareAsync = middleware;
         }
 
-        public async Task<Result> Invoke(HttpContext context)
+        public async Task<Request.Result> Invoke(HttpContext context)
         {
             if (Skip)
             {
-                return await Task.FromResult(Result.Skip());
+                return await Task.FromResult(Request.Result.Skip());
             }
 
             Request request = await Request.Create(context.Request, context.Response);
 
             if (middlewareSync != null)
             {
-                Result result = middlewareSync.Invoke(request);
+                Request.Result result = middlewareSync.Invoke(request);
                 if (result == null) { throw new MiddlewareException("Null Result"); }
                 return await Task.FromResult(result);
             }
 
             if (middlewareAsync != null)
             {
-                Result result = await middlewareAsync.Invoke(request);
+                Request.Result result = await middlewareAsync.Invoke(request);
                 if (result == null) { throw new MiddlewareException("Null Result"); }
                 return result;
             }
@@ -54,29 +54,7 @@ namespace JapeHttp
         public static Middleware Use(Response middleware) => new(middleware);
         public static Middleware UseAsync(ResponseAsync middleware) => new(middleware);
 
-        public class Result : JapeHttp.Request.Result
-        {
-            internal bool Prevented { get; }
-            internal bool Skipped { get; private init; }
-
-            internal static Result Prevent => new(true);
-            internal static Result Next => new(false);
-
-            private Result(bool prevented)
-            {
-                Prevented = prevented;
-            }
-
-            internal static Result Skip()
-            {
-                return new Result(false)
-                {
-                    Skipped = true
-                };
-            }
-        }
-
-        public class Request : JapeHttp.Request
+        public class Request : JapeHttp.Request, ICloseableRequest<Request.Result>
         {
             public PathString Path => request.Path;
 
@@ -99,32 +77,32 @@ namespace JapeHttp
                 Data = data;
             }
 
-            public override async Task<Result> Complete(Status.SuccessCode code)
+            public async Task<Result> Complete(Status.SuccessCode code)
             {
                 await Close((int)code);
-                return Middleware.Result.Prevent;
+                return Result.Prevent;
             }
 
-            public override async Task<Result> Complete(Status.SuccessCode code, string data)
+            public async Task<Result> Complete(Status.SuccessCode code, string data)
             {
                 await Close((int)code, data);
-                return Middleware.Result.Prevent;
+                return Result.Prevent;
             }
 
-            public override async Task<Result> Complete(Status.SuccessCode code, JsonData data)
+            public async Task<Result> Complete(Status.SuccessCode code, JsonData data)
             {
                 await Close((int)code, data);
-                return Middleware.Result.Prevent;
+                return Result.Prevent;
             }
 
-            public override async Task<Result> Abort(Status.ErrorCode code)
+            public async Task<Result> Abort(Status.ErrorCode code)
             {
                 await Close((int)code);
-                return Middleware.Result.Prevent;
+                return Result.Prevent;
             }
 
             #pragma warning disable CA1822 // Mark members as static
-            public Middleware.Result Next() => Middleware.Result.Next;
+            public Result Next() => Result.Next;
             #pragma warning restore CA1822 // Mark members as static
 
             internal static async Task<Request> Create(HttpRequest request, HttpResponse response)
@@ -139,6 +117,28 @@ namespace JapeHttp
 
                 return new Request(request, response, data);
 
+            }
+
+            public new class Result : JapeHttp.Request.Result
+            {
+                internal bool Prevented { get; }
+                internal bool Skipped { get; private init; }
+
+                internal static Result Prevent => new(true);
+                internal static Result Next => new(false);
+
+                private Result(bool prevented)
+                {
+                    Prevented = prevented;
+                }
+
+                internal static Result Skip()
+                {
+                    return new Result(false)
+                    {
+                        Skipped = true
+                    };
+                }
             }
         }
     }

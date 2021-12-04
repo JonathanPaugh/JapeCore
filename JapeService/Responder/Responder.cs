@@ -5,7 +5,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Threading.Tasks;
 using JapeCore;
 using JapeHttp;
@@ -35,8 +35,8 @@ namespace JapeService.Responder
 
         public delegate Task<Request.Result> Response(Transfer transfer, JsonData data, object[] args);
 
-        public delegate Task<Request.Result> RequestInterception(Intercept intercept, object[] args);
-        public delegate Task<Request.Result> ResponseInterception(Intercept intercept, JsonData data, object[] args);
+        public delegate Task<Intercept.Result> RequestInterception(Intercept intercept, object[] args);
+        public delegate Task<Intercept.Result> ResponseInterception(Intercept intercept, JsonData data, object[] args);
 
         public delegate T Indexer(JsonData data);
 
@@ -52,25 +52,19 @@ namespace JapeService.Responder
 
         public void Add(T id, Response response) => executors.Add(id, new Executor(response));
         public void Remove(T id) => executors.Remove(id);
-
         public bool Contains(T id) => executors.ContainsKey(id);
 
         public void InterceptRequest(RequestInterception interception) => requestIntercepters.Add(new RequestIntercepter(interception));
         public void InterceptResponse(ResponseInterception interception) => responseIntercepters.Add(new ResponseIntercepter(interception));
 
-        private bool Intercepted(Request.Result result)
+        private bool Intercepted(Intercept.Result result)
         {
             if (result == null)
             {
-                throw new ResultException($"{Name} Request: Null Resolution");
+                throw new ResultException($"{Name} Request: Null Result");
             }
 
-            if (result is not Intercepter.Result interceptorResolution)
-            {
-                throw new ResultException($"{Name} Request: Invalid Resolution Type");
-            }
-
-            return interceptorResolution.Intercepted;
+            return result.Intercepted;
         }
 
         public async Task<Request.Result> Invoke(ITransfer transfer, JsonData data, params object[] args)
@@ -90,7 +84,7 @@ namespace JapeService.Responder
                 result = new Request.Result();
                 Log.Write($"{Name} Request Error: Disposed");
             }
-            catch (ResponderDataException)
+            catch (InvalidDataException)
             {
                 result = new Request.Result();
                 Log.Write($"{Name} Request Error: Invalid Data");
@@ -135,7 +129,7 @@ namespace JapeService.Responder
 
             foreach (RequestIntercepter intercepter in requestIntercepters)
             {
-                Request.Result result = await intercepter.Invoke(new Intercept(request, response, Execute), args);
+                Intercept.Result result = await intercepter.Invoke(new Intercept(request, response, Execute), args);
                 if (Intercepted(result)) { return; }
             }
 
@@ -143,7 +137,7 @@ namespace JapeService.Responder
 
             foreach (ResponseIntercepter intercepter in responseIntercepters)
             {
-                Request.Result result = await intercepter.Invoke(new Intercept(request, response, Execute), data, args);
+                Intercept.Result result = await intercepter.Invoke(new Intercept(request, response, Execute), data, args);
                 if (Intercepted(result)) { return; }
             }
 
@@ -158,7 +152,7 @@ namespace JapeService.Responder
             {
                 data = await GetData(transfer.request);
             }
-            catch (ResponderDataException)
+            catch (InvalidDataException)
             {
                 await transfer.Abort(Status.ErrorCode.BadRequest);
                 throw;
@@ -210,7 +204,7 @@ namespace JapeService.Responder
             }
             catch (Exception exception)
             {
-                throw new ResponderDataException(exception);
+                throw new InvalidDataException("Unable to read data", exception);
             }
 
             return data;

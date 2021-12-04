@@ -100,7 +100,7 @@ namespace JapeHttp
             {
                 app.Use(async (context, next) =>
                 {
-                    Middleware.Result result = await middleware.Invoke(context);
+                    Middleware.Request.Result result = await middleware.Invoke(context);
                     if (result.Prevented) { return; }
                     await next.Invoke();
                 });

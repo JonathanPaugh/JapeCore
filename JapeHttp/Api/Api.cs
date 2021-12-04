@@ -1,4 +1,6 @@
-﻿namespace JapeHttp
+﻿using JapeCore;
+
+namespace JapeHttp
 {
     public class Api
     {

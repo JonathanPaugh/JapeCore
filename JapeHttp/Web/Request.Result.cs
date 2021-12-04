@@ -4,7 +4,7 @@
     {
         public class Result
         {
-            protected internal Result() {}
+            internal Result() {}
         }
     }
 }

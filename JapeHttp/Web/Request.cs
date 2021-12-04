@@ -8,6 +8,15 @@ namespace JapeHttp
     {
         public enum Method { Get, Post, Create, Delete };
 
+        internal readonly HttpRequest request;
+        internal readonly HttpResponse response;
+
+        protected Request(HttpRequest request, HttpResponse response)
+        {
+            this.request = request;
+            this.response = response;
+        }
+
         public Method GetMethod()
         {
             return request.Method switch
@@ -19,21 +28,6 @@ namespace JapeHttp
                 _ => throw new ArgumentException(),
             };
         }
-
-        internal readonly HttpRequest request;
-        internal readonly HttpResponse response;
-
-        protected Request(HttpRequest request, HttpResponse response)
-        {
-            this.request = request;
-            this.response = response;
-        }
-
-        public abstract Task<Result> Complete(Status.SuccessCode code);
-        public abstract Task<Result> Complete(Status.SuccessCode code, string data);
-        public abstract Task<Result> Complete(Status.SuccessCode code, JsonData data);
-
-        public abstract Task<Result> Abort(Status.ErrorCode code);
 
         protected async Task Close(int statusCode)
         {
