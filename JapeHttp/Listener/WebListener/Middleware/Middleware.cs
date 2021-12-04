@@ -56,13 +56,13 @@ namespace JapeHttp
             internal bool Prevented { get; }
             internal bool Skipped { get; private set; }
 
+            public static Result Prevent => new(true);
+            public static Result Continue => new(false);
+
             private Result(bool prevented)
             {
                 Prevented = prevented;
             }
-
-            public static Result Prevent() => new(true);
-            public static Result Continue() => new(false);
 
             internal static Result Skip()
             {
