@@ -17,31 +17,31 @@ namespace JapeService.Responder
                               Caller caller) 
                               : base(request, response, caller) {}
 
-            public override async Task<Resolution> Complete(Status.SuccessCode code)
+            public override async Task<Result> Complete(Status.SuccessCode code)
             {
                 await Close((int)code);
-                return GetResolution();
+                return GenerateResult();
             }
 
-            public override async Task<Resolution> Complete(Status.SuccessCode code, string data)
+            public override async Task<Result> Complete(Status.SuccessCode code, string data)
             {
                 await Close((int)code, data);
-                return GetResolution();
+                return GenerateResult();
             }
 
-            public override async Task<Resolution> Complete(Status.SuccessCode code, JsonData data)
+            public override async Task<Result> Complete(Status.SuccessCode code, JsonData data)
             {
                 await Close((int)code, data);
-                return GetResolution();
+                return GenerateResult();
             }
 
-            public override async Task<Resolution> Abort(Status.ErrorCode code)
+            public override async Task<Result> Abort(Status.ErrorCode code)
             {
                 await Close((int)code);
-                return GetResolution();
+                return GenerateResult();
             }
 
-            public async Task<Resolution> Redirect(T id, Transfer transfer, JsonData data, object[] args)
+            public async Task<Result> Redirect(T id, Transfer transfer, JsonData data, object[] args)
             {
                 return await Invoke(id, transfer, data, args);
             }

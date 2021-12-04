@@ -14,7 +14,7 @@ namespace JapeHttp
         private readonly Response response;
         private readonly Method method;
 
-        public delegate Task<Resolution> Response(WebListener.Request request);
+        public delegate Task<Middleware.Result> Response(WebListener.Request request);
 
         private Routing(string path, Response response, Method method)
         {

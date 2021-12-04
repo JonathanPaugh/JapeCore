@@ -22,7 +22,7 @@ namespace JapeDatabase
             { "delete", ResponseMongoDelete },
         };
 
-        public async Task<Resolution> ResponseMongoGet(Responder<string>.Transfer transfer, JsonData data, object[] args)
+        public async Task<Request.Result> ResponseMongoGet(Responder<string>.Transfer transfer, JsonData data, object[] args)
         {
             Log.Write("Get Request");
 
@@ -35,7 +35,7 @@ namespace JapeDatabase
             return await transfer.Complete(Status.SuccessCode.Ok, document.ToJson());
         }
 
-        public async Task<Resolution> ResponseMongoInsert(Responder<string>.Transfer transfer, JsonData data, object[] args)
+        public async Task<Request.Result> ResponseMongoInsert(Responder<string>.Transfer transfer, JsonData data, object[] args)
         {
             Log.Write("Insert Request");
 
@@ -50,7 +50,7 @@ namespace JapeDatabase
             return await transfer.Complete(Status.SuccessCode.Ok, document.GetId());
         }
 
-        public async Task<Resolution> ResponseMongoUpdate(Responder<string>.Transfer transfer, JsonData data, object[] args)
+        public async Task<Request.Result> ResponseMongoUpdate(Responder<string>.Transfer transfer, JsonData data, object[] args)
         {
             Log.Write("Update Request");
 
@@ -80,7 +80,7 @@ namespace JapeDatabase
             return await transfer.Complete(Status.SuccessCode.Ok, document.ToJson());
         }
 
-        public async Task<Resolution> ResponseMongoRemove(Responder<string>.Transfer transfer, JsonData data, object[] args)
+        public async Task<Request.Result> ResponseMongoRemove(Responder<string>.Transfer transfer, JsonData data, object[] args)
         {
             Log.Write("Update Request");
 
@@ -108,7 +108,7 @@ namespace JapeDatabase
             return await transfer.Complete(Status.SuccessCode.Ok, document.ToJson());
         }
 
-        public async Task<Resolution> ResponseMongoDelete(Responder<string>.Transfer transfer, JsonData data, object[] args)
+        public async Task<Request.Result> ResponseMongoDelete(Responder<string>.Transfer transfer, JsonData data, object[] args)
         {
             Log.Write("Delete Request");
 

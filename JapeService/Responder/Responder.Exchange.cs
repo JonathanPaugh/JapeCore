@@ -11,14 +11,14 @@ namespace JapeService.Responder
         {
             private readonly Caller caller;
 
-            public delegate Task<Resolution> Caller(T id, Transfer transfer, JsonData data, object[] args);
+            public delegate Task<Result> Caller(T id, Transfer transfer, JsonData data, object[] args);
 
             internal Exchange(HttpRequest request, HttpResponse response, Caller caller) : base(request, response)
             {
                 this.caller = caller;
             }
 
-            protected async Task<Resolution> Invoke(T id, Transfer transfer, JsonData data, object[] args)
+            protected async Task<Result> Invoke(T id, Transfer transfer, JsonData data, object[] args)
             {
                 return await caller.Invoke(id, transfer, data, args);
             }
