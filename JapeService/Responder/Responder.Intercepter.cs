@@ -9,11 +9,11 @@ namespace JapeService.Responder
     {
         internal class Intercepter
         {
-            internal class Resolution : JapeHttp.Resolution
+            internal class Result : Request.Result
             {
                 public bool Intercepted { get; }
 
-                internal Resolution(bool intercepted)
+                internal Result(bool intercepted)
                 {
                     Intercepted = intercepted;
                 }
@@ -29,7 +29,7 @@ namespace JapeService.Responder
                 this.interception = interception;
             }
 
-            internal async Task<JapeHttp.Resolution> Invoke(Intercept intercept, object[] args)
+            internal async Task<Request.Result> Invoke(Intercept intercept, object[] args)
             {
                 return await interception.Invoke(intercept, args);
             }
@@ -44,7 +44,7 @@ namespace JapeService.Responder
                 this.interception = interception;
             }
 
-            internal async Task<JapeHttp.Resolution> Invoke(Intercept intercept, JsonData data, object[] args)
+            internal async Task<Request.Result> Invoke(Intercept intercept, JsonData data, object[] args)
             {
                 return await interception.Invoke(intercept, data, args);
             }

@@ -21,7 +21,7 @@ namespace JapeDatabase
             { "receive", ResponseRedisReceive },
         };
 
-        public async Task<Resolution> ResponseRedisGet(Responder<string>.Transfer transfer, JsonData data, object[] args)
+        public async Task<Request.Result> ResponseRedisGet(Responder<string>.Transfer transfer, JsonData data, object[] args)
         {
             Log.Write("Get Request");
 
@@ -32,7 +32,7 @@ namespace JapeDatabase
             return await transfer.Complete(Status.SuccessCode.Ok, value.ToString());
         }
 
-        public async Task<Resolution> ResponseRedisSet(Responder<string>.Transfer transfer, JsonData data, object[] args)
+        public async Task<Request.Result> ResponseRedisSet(Responder<string>.Transfer transfer, JsonData data, object[] args)
         {
             Log.Write("Set Request");
 
@@ -43,7 +43,7 @@ namespace JapeDatabase
             return await transfer.Complete(Status.SuccessCode.Ok, value.ToString());
         }
 
-        public async Task<Resolution> ResponseRedisRemove(Responder<string>.Transfer transfer, JsonData data, object[] args)
+        public async Task<Request.Result> ResponseRedisRemove(Responder<string>.Transfer transfer, JsonData data, object[] args)
         {
             Log.Write("Remove Request");
 
@@ -54,7 +54,7 @@ namespace JapeDatabase
             return await transfer.Complete(Status.SuccessCode.Ok, value.ToString());
         }
 
-        public async Task<Resolution> ResponseRedisSubscribe(Responder<string>.Transfer transfer, JsonData data, object[] args)
+        public async Task<Request.Result> ResponseRedisSubscribe(Responder<string>.Transfer transfer, JsonData data, object[] args)
         {
             Log.Write("Subscribe Request");
 
@@ -103,7 +103,7 @@ namespace JapeDatabase
             }
         }
 
-        public async Task<Resolution> ResponseRedisUnsubscribe(Responder<string>.Transfer transfer, JsonData data, object[] args)
+        public async Task<Request.Result> ResponseRedisUnsubscribe(Responder<string>.Transfer transfer, JsonData data, object[] args)
         {
             Log.Write("Unsubscribe Request");
 
@@ -129,7 +129,7 @@ namespace JapeDatabase
             });
         }
 
-        public async Task<Resolution> ResponseRedisPublish(Responder<string>.Transfer transfer, JsonData data, object[] args)
+        public async Task<Request.Result> ResponseRedisPublish(Responder<string>.Transfer transfer, JsonData data, object[] args)
         {
             Log.Write("Publish Request");
 
@@ -140,7 +140,7 @@ namespace JapeDatabase
             return await transfer.Complete(Status.SuccessCode.Ok, value.ToString());
         }
 
-        public async Task<Resolution> ResponseRedisReceive(Responder<string>.Transfer transfer, JsonData data, object[] args)
+        public async Task<Request.Result> ResponseRedisReceive(Responder<string>.Transfer transfer, JsonData data, object[] args)
         {
             Log.Write("Receive Request");
 

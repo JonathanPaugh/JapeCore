@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Http;
 
 namespace JapeHttp
 {
-    public abstract class Request
+    public abstract partial class Request
     {
         public enum Method { Get, Post, Create, Delete };
 
@@ -29,11 +29,11 @@ namespace JapeHttp
             this.response = response;
         }
 
-        public abstract Task<Resolution> Complete(Status.SuccessCode code);
-        public abstract Task<Resolution> Complete(Status.SuccessCode code, string data);
-        public abstract Task<Resolution> Complete(Status.SuccessCode code, JsonData data);
+        public abstract Task<Result> Complete(Status.SuccessCode code);
+        public abstract Task<Result> Complete(Status.SuccessCode code, string data);
+        public abstract Task<Result> Complete(Status.SuccessCode code, JsonData data);
 
-        public abstract Task<Resolution> Abort(Status.ErrorCode code);
+        public abstract Task<Result> Abort(Status.ErrorCode code);
 
         protected async Task Close(int statusCode)
         {
@@ -55,6 +55,6 @@ namespace JapeHttp
             await response.CompleteAsync();
         }
 
-        protected static Resolution GetResolution() => new();
+        protected static Result GenerateResult() => new();
     }
 }

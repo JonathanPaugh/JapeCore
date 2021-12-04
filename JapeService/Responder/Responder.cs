@@ -17,7 +17,7 @@ namespace JapeService.Responder
     {
         string Name { get; }
 
-        Task<Resolution> Invoke(ITransfer transfer, JsonData data, params object[] args);
+        Task<Request.Result> Invoke(ITransfer transfer, JsonData data, params object[] args);
     }
 
     public partial class Responder<T> : IEnumerable, IResponder
@@ -33,10 +33,10 @@ namespace JapeService.Responder
         private readonly List<RequestIntercepter> requestIntercepters = new();
         private readonly List<ResponseIntercepter> responseIntercepters = new();
 
-        public delegate Task<Resolution> Response(Transfer transfer, JsonData data, object[] args);
+        public delegate Task<Request.Result> Response(Transfer transfer, JsonData data, object[] args);
 
-        public delegate Task<Resolution> RequestInterception(Intercept intercept, object[] args);
-        public delegate Task<Resolution> ResponseInterception(Intercept intercept, JsonData data, object[] args);
+        public delegate Task<Request.Result> RequestInterception(Intercept intercept, object[] args);
+        public delegate Task<Request.Result> ResponseInterception(Intercept intercept, JsonData data, object[] args);
 
         public delegate T Indexer(JsonData data);
 
@@ -58,56 +58,56 @@ namespace JapeService.Responder
         public void InterceptRequest(RequestInterception interception) => requestIntercepters.Add(new RequestIntercepter(interception));
         public void InterceptResponse(ResponseInterception interception) => responseIntercepters.Add(new ResponseIntercepter(interception));
 
-        private bool Intercepted(Resolution resolution)
+        private bool Intercepted(Request.Result result)
         {
-            if (resolution == null)
+            if (result == null)
             {
-                throw new ResolutionException($"{Name} Request: Null Resolution");
+                throw new ResultException($"{Name} Request: Null Resolution");
             }
 
-            if (resolution is not Intercepter.Resolution interceptorResolution)
+            if (result is not Intercepter.Result interceptorResolution)
             {
-                throw new ResolutionException($"{Name} Request: Invalid Resolution Type");
+                throw new ResultException($"{Name} Request: Invalid Resolution Type");
             }
 
             return interceptorResolution.Intercepted;
         }
 
-        public async Task<Resolution> Invoke(ITransfer transfer, JsonData data, params object[] args)
+        public async Task<Request.Result> Invoke(ITransfer transfer, JsonData data, params object[] args)
         {
-            Resolution resolution = null;
+            Request.Result result = null;
 
             try
             {
-                resolution = await RespondPost(new Transfer(transfer.Request, transfer.Response, Execute), data, args);
+                result = await RespondPost(new Transfer(transfer.Request, transfer.Response, Execute), data, args);
             }
-            catch (ResolutionException)
+            catch (ResultException)
             {
                 throw;
             }
             catch (ObjectDisposedException)
             {
-                resolution = new Resolution();
+                result = new Request.Result();
                 Log.Write($"{Name} Request Error: Disposed");
             }
             catch (ResponderDataException)
             {
-                resolution = new Resolution();
+                result = new Request.Result();
                 Log.Write($"{Name} Request Error: Invalid Data");
             }
             catch (Exception exception)
             {
-                resolution = new Resolution();
+                result = new Request.Result();
                 Log.Write($"{Name} Request Error: Unknown (Information Logged)");
                 Log.WriteLog(exception.ToString());
             }
 
-            if (resolution == null)
+            if (result == null)
             {
-                throw new ResolutionException($"{Name} Request: Null Resolution");
+                throw new ResultException($"{Name} Request: Null Resolution");
             }
 
-            return resolution;
+            return result;
         }
 
         public async Task Respond(HttpRequest request, HttpResponse response, params object[] args)
@@ -135,16 +135,16 @@ namespace JapeService.Responder
 
             foreach (RequestIntercepter intercepter in requestIntercepters)
             {
-                Resolution resolution = await intercepter.Invoke(new Intercept(request, response, Execute), args);
-                if (Intercepted(resolution)) { return; }
+                Request.Result result = await intercepter.Invoke(new Intercept(request, response, Execute), args);
+                if (Intercepted(result)) { return; }
             }
 
             JsonData data = await RespondData(transfer);
 
             foreach (ResponseIntercepter intercepter in responseIntercepters)
             {
-                Resolution resolution = await intercepter.Invoke(new Intercept(request, response, Execute), data, args);
-                if (Intercepted(resolution)) { return; }
+                Request.Result result = await intercepter.Invoke(new Intercept(request, response, Execute), data, args);
+                if (Intercepted(result)) { return; }
             }
 
             await RespondPost(transfer, data, args);
@@ -167,7 +167,7 @@ namespace JapeService.Responder
             return data;
         }
 
-        private async Task<Resolution> RespondPost(Transfer transfer, JsonData data, params object[] args)
+        private async Task<Request.Result> RespondPost(Transfer transfer, JsonData data, params object[] args)
         {
             object id;
 
@@ -216,11 +216,11 @@ namespace JapeService.Responder
             return data;
         }
 
-        private async Task<Resolution> Execute(T id, Transfer transfer, JsonData data, params object[] args)
+        private async Task<Request.Result> Execute(T id, Transfer transfer, JsonData data, params object[] args)
         {
-            Resolution resolution = await executors[id].Invoke(transfer, data, args);
-            if (resolution == null) { throw new ResolutionException($"{Name} Request: Null Resolution"); }
-            return resolution;
+            Request.Result result = await executors[id].Invoke(transfer, data, args);
+            if (result == null) { throw new ResultException($"{Name} Request: Null Resolution"); }
+            return result;
         }
     }
 }
