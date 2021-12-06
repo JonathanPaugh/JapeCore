@@ -21,7 +21,9 @@ namespace JapeService
 
         private readonly Listener listener;
 
+        #pragma warning disable IDE0079 // Remove unnecessary suppression
         [SuppressMessage("ReSharper", "VirtualMemberCallInConstructor")]
+        #pragma warning restore IDE0079 // Remove unnecessary suppression
         protected Service(int http, int https)
         {
             listener = ServiceListener();

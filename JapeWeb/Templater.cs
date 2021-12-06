@@ -1,5 +1,4 @@
 ﻿using System;
-using System.IO;
 using System.Threading.Tasks;
 using JapeCore;
 
@@ -7,18 +6,19 @@ namespace JapeWeb
 {
     public class Templater
     {
-        private readonly string path;
+        public string Path { get; }
+
         private readonly Func<string, Task<string>> readFile;
 
         internal Templater(string path, Func<string, Task<string>> readFile)
         {
-            this.path = path;
+            Path = path;
             this.readFile = readFile;
         }
 
-        public async Task<string> GetTemplate(string path)
+        public async Task<string> ReadFile(string path)
         {
-            return await readFile.Invoke(Path.Combine(this.path, VirtualPath.Format(path)));
+            return await readFile.Invoke(System.IO.Path.Combine(Path, SystemPath.Format(path)));
         }
     }
 }

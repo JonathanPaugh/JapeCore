@@ -3,7 +3,7 @@ using System.IO;
 
 namespace JapeCore
 {
-    public static class VirtualPath
+    public static class SystemPath
     {
         public static string Format(string path)
         {

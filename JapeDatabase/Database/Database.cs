@@ -58,7 +58,7 @@ namespace JapeDatabase
 
             return new ResponderList
             {
-                factory.Create("Director", data => data.GetByte("index")).Responses(new ResponseBank<byte>
+                factory.Create(DirectorName, data => data.GetByte("index")).Responses(new ResponseBank<byte>
                 {
                     { 0, mongoResponder.Invoke },
                     { 1, redisResponder.Invoke }

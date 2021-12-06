@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Net;
 using System.Threading.Tasks;
 using JapeCore;
 using Microsoft.AspNetCore.Builder;
@@ -10,30 +9,31 @@ using Microsoft.Extensions.FileProviders;
 
 namespace JapeHttp
 {
-    public partial class WebListener : Listener
+    public class WebListener : Listener
     {
         public enum AccessLogMode { None, LogOnly, ConsoleLog }
 
-        public string BasePath => AppDomain.CurrentDomain.BaseDirectory;
-        public string StaticPath => Path.Combine(BasePath, staticDirectory);
+        public string Root => AppDomain.CurrentDomain.BaseDirectory;
+        public string StaticPath => Path.Combine(Root, staticDirectory);
 
         private readonly string staticDirectory = "public";
         private readonly string landingPage = "index.html";
 
         private readonly Logger accessLogger = Log.Create("access.log");
 
-        private readonly List<Middleware> middlewareCollection = new();
-        private readonly List<Routing> routingCollection = new();
-
         private readonly PhysicalFileProvider baseFileProvider;
         private readonly PhysicalFileProvider staticFileProvider;
 
+        private readonly Action<IApplicationBuilder> setup;
+
         public AccessLogMode AccessLogging { get; set; } = AccessLogMode.LogOnly;
 
-        public WebListener(string staticDirectory = null, string landingPage = null)
+        public WebListener(string staticDirectory = null, string landingPage = null, Action<IApplicationBuilder> setup = null)
         {
             if (staticDirectory != null) { this.staticDirectory = staticDirectory; }
             if (landingPage != null) { this.landingPage = landingPage; }
+
+            this.setup = setup;
 
             if (!Directory.Exists(StaticPath))
             {
@@ -42,77 +42,42 @@ namespace JapeHttp
                 Log.Write("Empty static directory created");
             }
 
-            baseFileProvider = new PhysicalFileProvider(BasePath);
+            baseFileProvider = new PhysicalFileProvider(Root);
             staticFileProvider = new PhysicalFileProvider(StaticPath);
-        }
-
-        public void Use(Middleware middleware)
-        {
-            if (PreventIfRunning("UseMiddleware")) { return; }
-            middlewareCollection.Add(middleware);
-        }
-
-        public void Route(Routing routing)
-        {
-            if (PreventIfRunning(nameof(Route))) { return; }
-            routingCollection.Add(routing);
         }
 
         public async Task<string> ReadFile(string path)
         {
-            IFileInfo fileInfo = baseFileProvider.GetFileInfo(VirtualPath.Format(path));
+            IFileInfo fileInfo = baseFileProvider.GetFileInfo(SystemPath.Format(path));
             if (!fileInfo.Exists) { return null; }
             return await fileInfo.Read();
         }
 
         public async Task<string> ReadStaticFile(string path)
         {
-            IFileInfo fileInfo = staticFileProvider.GetFileInfo(VirtualPath.Format(path));
+            IFileInfo fileInfo = staticFileProvider.GetFileInfo(SystemPath.Format(path));
             if (!fileInfo.Exists) { return null; }
             return await fileInfo.Read();
         }
 
         protected sealed override void Setup(IApplicationBuilder app)
         {
+            app.UseRouting();
+
             app.Use(async (context, next) =>
             {
                 await OnRequest(context);
                 await next.Invoke();
             });
 
-            SetupMiddleware(app);
-
-            app.UseRouting();
-
             SetupLandingPage(app);
 
-            SetupRouting(app);
+            setup?.Invoke(app);
 
             app.UseStaticFiles(new StaticFileOptions
             {
                 FileProvider = staticFileProvider,
             });
-        }
-
-        private void SetupMiddleware(IApplicationBuilder app)
-        {
-            foreach (Middleware middleware in middlewareCollection)
-            {
-                app.Use(async (context, next) =>
-                {
-                    Middleware.Request.Result result = await middleware.Invoke(context);
-                    if (result.Prevented) { return; }
-                    await next.Invoke();
-                });
-            }
-        }
-        
-        private void SetupRouting(IApplicationBuilder app)
-        {
-            foreach (Routing routing in routingCollection)
-            {
-                app.UseEndpoints(routing.Build);
-            }
         }
 
         private void SetupLandingPage(IApplicationBuilder app)

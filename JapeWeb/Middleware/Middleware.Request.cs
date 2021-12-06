@@ -1,12 +1,13 @@
 ﻿using System.Threading.Tasks;
 using JapeCore;
+using JapeHttp;
 using Microsoft.AspNetCore.Http;
 
-namespace JapeHttp
+namespace JapeWeb
 {
     public partial class Middleware
     {
-        public partial class Request : JapeHttp.Request, ICloseableRequest<Request.Result>
+        public class Request : JapeHttp.Request, ICloseableRequest<Middleware.Result>
         {
             public PathString Path => request.Path;
 
@@ -29,32 +30,32 @@ namespace JapeHttp
                 Data = data;
             }
 
-            public async Task<Result> Complete(Status.SuccessCode code)
+            public async Task<Middleware.Result> Complete(Status.SuccessCode code)
             {
                 await Close((int)code);
-                return Result.Prevent;
+                return Middleware.Result.Prevent;
             }
 
-            public async Task<Result> Complete(Status.SuccessCode code, string data)
+            public async Task<Middleware.Result> Complete(Status.SuccessCode code, string data)
             {
                 await Close((int)code, data);
-                return Result.Prevent;
+                return Middleware.Result.Prevent;
             }
 
-            public async Task<Result> Complete(Status.SuccessCode code, JsonData data)
+            public async Task<Middleware.Result> Complete(Status.SuccessCode code, JsonData data)
             {
                 await Close((int)code, data);
-                return Result.Prevent;
+                return Middleware.Result.Prevent;
             }
 
-            public async Task<Result> Abort(Status.ErrorCode code)
+            public async Task<Middleware.Result> Abort(Status.ErrorCode code)
             {
                 await Close((int)code);
-                return Result.Prevent;
+                return Middleware.Result.Prevent;
             }
 
             #pragma warning disable CA1822 // Mark members as static
-            public Result Next() => Result.Next;
+            public Middleware.Result Next() => Middleware.Result.Next;
             #pragma warning restore CA1822 // Mark members as static
 
             internal static async Task<Request> Create(HttpRequest request, HttpResponse response)
