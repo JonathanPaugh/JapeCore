@@ -52,6 +52,8 @@ namespace JapeWeb
         {
             this.http = http;
             this.https = https;
+
+            SetupComponents();
         }
 
         protected override Listener ServiceListener()
@@ -170,6 +172,12 @@ namespace JapeWeb
             Setup(app);
         }
 
+        private void SetupComponents()
+        {
+            IEnumerator<IWebComponent> components = Components();
+            while (components.MoveNext()) {}
+        }
+
         private void SetupMiddleware(IApplicationBuilder app)
         {
             foreach (Middleware middleware in middlewares)
@@ -217,6 +225,7 @@ namespace JapeWeb
         }
 
         protected virtual void Setup(IApplicationBuilder app) {}
+        protected virtual IEnumerator<IWebComponent> Components() { yield return null; }
 
         protected bool PreventIfRunning(string name) => Prevention("running", name, () => listener.Running);
         protected bool PreventIfIdle(string name) => Prevention("idle", name, () => !listener.Running);

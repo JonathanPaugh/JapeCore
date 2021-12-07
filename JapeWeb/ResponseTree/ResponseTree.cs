@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Http;
 
 namespace JapeWeb
 {
-    public partial class ResponseTree
+    public partial class ResponseTree : IWebComponent
     {
         private readonly Branch root;
 

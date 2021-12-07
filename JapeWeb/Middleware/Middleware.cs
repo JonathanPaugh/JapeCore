@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Http;
 
 namespace JapeWeb
 {
-    public partial class Middleware
+    public partial class Middleware : IWebComponent
     {
         public bool Skip { get; set; }
 

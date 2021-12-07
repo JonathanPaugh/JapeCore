@@ -3,7 +3,7 @@ using Microsoft.Extensions.FileProviders;
 
 namespace JapeWeb
 {
-    public class Routing
+    public class Routing : IWebComponent
     {
         internal readonly string requestPath;
         internal readonly PhysicalFileProvider fileProvider;
