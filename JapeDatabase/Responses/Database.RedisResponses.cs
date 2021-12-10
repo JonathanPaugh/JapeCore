@@ -2,7 +2,6 @@
 using System.Threading.Tasks;
 using JapeCore;
 using JapeHttp;
-using JapeService;
 using JapeService.Responder;
 using StackExchange.Redis;
 
@@ -27,7 +26,7 @@ namespace JapeDatabase
 
             IDatabase database = redis.GetDatabase();
 
-            RedisValue value = await database.StringGetAsync(data.GetString("key"));
+            RedisValue value = await database.StringGetAsync(data.GetString("id"));
 
             return await transfer.Complete(Status.SuccessCode.Ok, value.ToString());
         }
@@ -38,7 +37,7 @@ namespace JapeDatabase
 
             IDatabase database = redis.GetDatabase();
 
-            bool value = await database.StringSetAsync(data.GetString("key"), data.GetString("value"));
+            bool value = await database.StringSetAsync(data.GetString("id"), data.GetString("value"));
 
             return await transfer.Complete(Status.SuccessCode.Ok, value.ToString());
         }
@@ -49,7 +48,7 @@ namespace JapeDatabase
 
             IDatabase database = redis.GetDatabase();
 
-            bool value = await database.KeyDeleteAsync(data.GetString("key"));
+            bool value = await database.KeyDeleteAsync(data.GetString("id"));
 
             return await transfer.Complete(Status.SuccessCode.Ok, value.ToString());
         }
