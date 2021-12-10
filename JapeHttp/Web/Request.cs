@@ -38,14 +38,14 @@ namespace JapeHttp
         protected async Task Close(int statusCode, string data)
         {
             response.StatusCode = statusCode;
-            await response.Write(data);
+            if (data != null) { await response.Write(data); }
             await response.CompleteAsync();
         }
 
         protected async Task Close(int statusCode, JsonData data)
         {
             response.StatusCode = statusCode;
-            await response.WriteJson(data);
+            if (data != null) { await response.WriteJson(data); }
             await response.CompleteAsync();
         }
 

@@ -53,8 +53,8 @@ namespace JapeDatabase
 
         protected override ResponderList Responders(ResponderFactory factory)
         {
-            IResponder mongoResponder = factory.Create(MongoResponderName, data => data.GetString("id").ToLowerInvariant()).Responses(MongoResponses).Build();
-            IResponder redisResponder = factory.Create(RedisResponderName, data => data.GetString("id").ToLowerInvariant()).Responses(RedisResponses).Build();
+            IResponder mongoResponder = factory.Create(MongoResponderName, data => data.GetString("command").ToLowerInvariant()).Responses(MongoResponses).Build();
+            IResponder redisResponder = factory.Create(RedisResponderName, data => data.GetString("command").ToLowerInvariant()).Responses(RedisResponses).Build();
 
             return new ResponderList
             {

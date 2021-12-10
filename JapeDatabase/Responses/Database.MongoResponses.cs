@@ -8,6 +8,8 @@ using JapeService.Responder;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using System.Linq;
+using MongoDB.Bson.IO;
+using MongoDB.Bson.Serialization;
 
 namespace JapeDatabase
 {
@@ -30,7 +32,7 @@ namespace JapeDatabase
 
             IMongoCollection<BsonDocument> collection = database.GetCollection<BsonDocument>(data.GetString("collection"));
 
-            BsonDocument document = await collection.Find(Mongo.Filters.Id(data.GetString("key"))).FirstOrDefaultAsync();
+            BsonDocument document = await collection.Find(Mongo.Filters.Id(data.GetString("id"))).FirstOrDefaultAsync();
 
             return await transfer.Complete(Status.SuccessCode.Ok, document.ToJson());
         }
@@ -75,7 +77,7 @@ namespace JapeDatabase
                 ReturnDocument = ReturnDocument.After
             };
 
-            BsonDocument document = await collection.FindOneAndUpdateAsync(Mongo.Filters.Id(data.GetString("key")), update, options);
+            BsonDocument document = await collection.FindOneAndUpdateAsync(Mongo.Filters.Id(data.GetString("id")), update, options);
 
             return await transfer.Complete(Status.SuccessCode.Ok, document.ToJson());
         }
@@ -103,7 +105,7 @@ namespace JapeDatabase
                 ReturnDocument = ReturnDocument.After
             };
 
-            BsonDocument document = await collection.FindOneAndUpdateAsync(Mongo.Filters.Id(data.GetString("key")), update, options);
+            BsonDocument document = await collection.FindOneAndUpdateAsync(Mongo.Filters.Id(data.GetString("id")), update, options);
 
             return await transfer.Complete(Status.SuccessCode.Ok, document.ToJson());
         }
@@ -116,7 +118,7 @@ namespace JapeDatabase
 
             IMongoCollection<BsonDocument> collection = database.GetCollection<BsonDocument>(data.GetString("collection"));
 
-            BsonDocument document = await collection.FindOneAndDeleteAsync(Mongo.Filters.Id(data.GetString("key")));
+            BsonDocument document = await collection.FindOneAndDeleteAsync(Mongo.Filters.Id(data.GetString("id")));
 
             return await transfer.Complete(Status.SuccessCode.Ok, document.ToJson());
         }

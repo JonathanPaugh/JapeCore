@@ -8,7 +8,10 @@ namespace JapeHttp
     {
         private readonly string data;
 
-        private ApiResponse(string data) { this.data = data; } 
+        private ApiResponse(string data)
+        {
+            this.data = data;
+        } 
         
         public string Read() { return data; }
         public JsonData ReadJson() { return new JsonData(Read()); }

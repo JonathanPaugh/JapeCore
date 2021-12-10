@@ -1,27 +1,39 @@
-﻿using JapeHttp;
+﻿using System;
+using System.Data;
+using JapeHttp;
 
 namespace JapeWeb
 {
     public partial class DatabaseApi
     {
-        private ApiResponse MongoRequest(string command, JsonData data)
+        private T MongoRequest<T>(string command, JsonData data, Func<ApiResponse, T> read)
         {
             JsonData mongoData = new(data)
             {
                 { "index", MongoIndex },
-                { "id", command }
+                { "command", command }
             };
-            return Request(mongoData);
+
+            ApiResponse response = Request(mongoData);
+
+            try
+            {
+                return read.Invoke(response);
+            }
+            catch
+            {
+                throw new DataException($"Mongo command failed: {command}");
+            }
         }
 
-        public string MongoGet(string database, string collection, string id)
+        public JsonData MongoGet(string database, string collection, string id)
         {
             return MongoRequest("get", new JsonData
             {
                 { "store", database },
                 { "collection", collection },
-                { "key", id }
-            }).Read();
+                { "id", id }
+            }, response => response.ReadJson());
         }
 
         /// <summary>
@@ -38,39 +50,39 @@ namespace JapeWeb
                 { "store", database },
                 { "collection", collection },
                 { "data", data }
-            }).Read();
+            }, response => response.Read());
         }
 
-        public string MongoUpdate(string database, string collection, string id, JsonData data)
+        public JsonData MongoUpdate(string database, string collection, string id, JsonData data)
         {
             return MongoRequest("update", new JsonData
             {
                 { "store", database },
                 { "collection", collection },
-                { "key", id },
+                { "id", id },
                 { "data", data }
-            }).Read();
+            }, response => response.ReadJson());
         }
 
-        public string MongoRemove(string database, string collection, string id, string[] data)
+        public JsonData MongoRemove(string database, string collection, string id, string[] data)
         {
             return MongoRequest("remove", new JsonData
             {
                 { "store", database },
                 { "collection", collection },
-                { "key", id },
+                { "id", id },
                 { "data", data }
-            }).Read();
+            }, response => response.ReadJson());
         }
 
-        public string MongoDelete(string database, string collection, string id)
+        public JsonData MongoDelete(string database, string collection, string id)
         {
             return MongoRequest("delete", new JsonData
             {
                 { "store", database },
                 { "collection", collection },
-                { "key", id }
-            }).Read();
+                { "id", id }
+            }, response => response.ReadJson());
         }
     }
 }
