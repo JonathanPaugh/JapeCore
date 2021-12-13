@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Threading.Tasks;
+using JapeCore;
 using Microsoft.AspNetCore.Http;
 
 namespace JapeHttp
@@ -22,6 +23,7 @@ namespace JapeHttp
         public static async Task<JsonData> ReadJson(this HttpRequest request)
         {
             string json = await Read(request);
+            Log.Write(json);
             return new JsonData(json);
         }
 

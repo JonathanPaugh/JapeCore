@@ -1,31 +1,34 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using JapeCore;
 using JapeService;
 
 namespace JapeDatabase
 {
-    internal class Program : ConsoleProgram<int, int>
+    internal class Program : ConsoleProgram<int, int, string>
     {
         protected override string DefaultLog => "database.log";
 
-        protected override IEnumerable<ICommandArg> Args() => Service.Args;
+        protected override IEnumerable<ICommandArg> Args() => Database.Args.Concat(Service.Args);
 
         private int http;
         private int https;
+        private string env;
 
         private static async Task Main(string[] args) => await RunAsync<Program>(args);
 
-        protected override void OnSetup(int http, int https)
+        protected override void OnSetup(int http, int https, string env)
         {
             this.http = http;
             this.https = https;
+            this.env = env;
         }
 
         protected override async Task OnStartAsync()
         {
-            Database database = new(http, https, true, true);
+            Database database = new(http, https, env, true, true);
             await database.Start();
         }
     }

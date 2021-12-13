@@ -1,5 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
+using JapeCore;
+using JapeHttp;
 using JapeService;
 using JapeService.Responder;
 using Microsoft.AspNetCore.Http;
@@ -8,6 +11,8 @@ namespace JapeDatabase
 {
     public partial class Database : RestService
     {
+        private const string DefaultEnv = "API_JAPE_DATABASE";
+
         public const byte MongoIndex = 0;
         public const byte RedisIndex = 1;
 
@@ -20,13 +25,23 @@ namespace JapeDatabase
         public Responder<string> RedisResponder => GetResponder<string>(RedisResponderName);
         private const string RedisResponderName = "Redis"; 
 
+        public new static IEnumerable<ICommandArg> Args => new ICommandArg[]
+        {
+            CommandArg<string>.CreateOptional("--env", "Environment variable for key", () => DefaultEnv),
+        };
+
+        private string Key => Environment.GetEnvironmentVariable(env);
+
+        private readonly string env;
+
         private readonly bool useMongo;
         private readonly bool useRedis;
 
         protected Mongo mongo;
         protected Redis redis;
 
-        public Database(int http, int https, bool useMongo, bool useRedis) : base(http, https) {
+        public Database(int http, int https, string env, bool useMongo, bool useRedis) : base(http, https) {
+            this.env = env;
             this.useMongo = useMongo;
             this.useRedis = useRedis;
         }
@@ -62,6 +77,18 @@ namespace JapeDatabase
                 {
                     { 0, mongoResponder.Invoke },
                     { 1, redisResponder.Invoke }
+                }).InterceptResponse(async (intercept, data, _) =>
+                {
+                    string key = data.GetString("key");
+
+                    if (Key != key)
+                    {
+                        Log.Write("Database Request Error: Invalid Key");
+                        Log.Write(key);
+                        return await intercept.Abort(Status.ErrorCode.Forbidden);
+                    }
+
+                    return intercept.Pass();
                 }).Build(),
 
                 mongoResponder,
