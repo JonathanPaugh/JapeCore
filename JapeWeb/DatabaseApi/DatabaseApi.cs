@@ -9,7 +9,7 @@ namespace JapeWeb
     {
         private readonly Api api;
 
-        public DatabaseApi(int port) : base(port, 0, false, false)
+        public DatabaseApi(int port, string env) : base(port, 0, env, false, false)
         {
             api = new Api($"http://localhost:{port}");
         }
@@ -23,7 +23,7 @@ namespace JapeWeb
         {
             return api.Request(string.Empty)
                       .SetMethod(JapeHttp.Request.Method.Post)
-                      .WriteJson(data)
+                      .WriteJson(new JsonData(data) {{ "key", Key }})
                       .GetResponse();
         }
     }

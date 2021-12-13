@@ -30,7 +30,7 @@ namespace JapeDatabase
             CommandArg<string>.CreateOptional("--env", "Environment variable for key", () => DefaultEnv),
         };
 
-        private string Key => Environment.GetEnvironmentVariable(env);
+        protected string Key => Environment.GetEnvironmentVariable(env);
 
         private readonly string env;
 
