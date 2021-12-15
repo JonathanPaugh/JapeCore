@@ -84,7 +84,6 @@ namespace JapeDatabase
                     if (Key != key)
                     {
                         Log.Write("Database Request Error: Invalid Key");
-                        Log.Write(key);
                         return await intercept.Abort(Status.ErrorCode.Forbidden);
                     }
 
