@@ -5,7 +5,9 @@ using System.Threading.Tasks;
 using JapeCore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.Net.Http.Headers;
 
 namespace JapeHttp
 {
@@ -16,6 +18,8 @@ namespace JapeHttp
         public string Root => AppDomain.CurrentDomain.BaseDirectory;
         public string StaticPath => Path.Combine(Root, staticDirectory);
 
+        public AccessLogMode AccessLogging { get; set; } = AccessLogMode.LogOnly;
+
         private readonly string staticDirectory = "public";
         private readonly string landingPage = "index.html";
 
@@ -24,16 +28,16 @@ namespace JapeHttp
         private readonly PhysicalFileProvider baseFileProvider;
         private readonly PhysicalFileProvider staticFileProvider;
 
-        private readonly Action<IApplicationBuilder> setup;
+        private Action<IApplicationBuilder> setup;
+        private Action<SessionOptions> session;
 
-        public AccessLogMode AccessLogging { get; set; } = AccessLogMode.LogOnly;
+        private bool buffering;
+        private bool caching;
 
-        public WebListener(string staticDirectory = null, string landingPage = null, Action<IApplicationBuilder> setup = null)
+        public WebListener(string staticDirectory = null, string landingPage = null)
         {
             if (staticDirectory != null) { this.staticDirectory = staticDirectory; }
             if (landingPage != null) { this.landingPage = landingPage; }
-
-            this.setup = setup;
 
             if (!Directory.Exists(StaticPath))
             {
@@ -60,9 +64,47 @@ namespace JapeHttp
             return await fileInfo.Read();
         }
 
+        public void UseSetup(Action<IApplicationBuilder> setup)
+        {
+            if (PreventIfConstructed(nameof(UseSetup))) { return; }
+            this.setup = setup;
+        }
+
+        public void UseSession(Action<SessionOptions> session)
+        {
+            if (PreventIfConstructed(nameof(UseSession))) { return; }
+            this.session = session;
+        }
+
+        public void EnableBuffering()
+        {
+            if (PreventIfConstructed(nameof(EnableBuffering))) { return; }
+            buffering = true;
+        }
+
+        public void EnableCaching()
+        {
+            if (PreventIfConstructed(nameof(EnableCaching))) { return; }
+            caching = true;
+        }
+
+        protected override void Services(IServiceCollection services)
+        {
+            if (session != null)
+            {
+                services.AddDistributedMemoryCache();
+                services.AddSession(session);
+            }
+        }
+
         protected sealed override void Setup(IApplicationBuilder app)
         {
             app.UseRouting();
+
+            if (session != null)
+            {
+                app.UseSession();
+            }
 
             app.Use(async (context, next) =>
             {
@@ -70,9 +112,9 @@ namespace JapeHttp
                 await next.Invoke();
             });
 
-            SetupLandingPage(app);
-
             setup?.Invoke(app);
+
+            SetupLandingPage(app);
 
             app.UseStaticFiles(new StaticFileOptions
             {
@@ -87,7 +129,7 @@ namespace JapeHttp
                 endpoints.MapGet("/", async context =>
                 {
                     string data = await ReadStaticFile(landingPage);
-                    await context.Response.WriteAsync(data);
+                    await HttpResponseWritingExtensions.WriteAsync(context.Response, data);
                 });
             });
         }
@@ -95,7 +137,10 @@ namespace JapeHttp
         private Task OnRequest(HttpContext context)
         {   
             LogAccess(context);
-            context.Request.EnableBuffering();
+
+            if (buffering) { context.Request.EnableBuffering(); }
+            if (!caching) { context.Response.Headers.AppendCommaSeparatedValues(HeaderNames.CacheControl, Request.NoCache); }
+            
             return Task.CompletedTask;
         }
 

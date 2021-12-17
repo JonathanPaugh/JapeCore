@@ -81,7 +81,7 @@ namespace JapeWeb
             internal void WriteChildren(Action<string> write, string previous)
             {
                 string next = previous + requestPath;
-                Log.WriteConsole(next);
+                write(next);
                 foreach (Branch child in branches)
                 {
                     child.WriteChildren(write, next);

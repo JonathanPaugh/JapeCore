@@ -31,15 +31,9 @@ namespace JapeWeb
         {
             switch (method)
             {
-                case Method.Get:
-                    builder.MapGet(requestPath, Respond);
-                    break;
-                case Method.Post:
-                    builder.MapPost(requestPath, Respond);
-                    break;
-                case Method.Any:
-                    builder.Map(requestPath, Respond);
-                    break;
+                case Method.Get: builder.MapGet(requestPath, Respond); break;
+                case Method.Post: builder.MapPost(requestPath, Respond); break;
+                case Method.Any: builder.Map(requestPath, Respond); break;
             }
         }
 
@@ -47,7 +41,7 @@ namespace JapeWeb
         {
             string data = await read.Invoke(responsePath);
             context.Response.StatusCode = (int)Status.SuccessCode.Ok;
-            await context.Response.Write(data);
+            await HttpResponseExt.WriteAsync(context.Response, data);
             await context.Response.CompleteAsync();
         }
     }

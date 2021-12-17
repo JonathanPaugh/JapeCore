@@ -196,7 +196,7 @@ namespace JapeService.Responder
 
             try
             {
-                data = await request.ReadJson();
+                data = await request.ReadJsonAsync();
             } 
             catch (ObjectDisposedException)
             {

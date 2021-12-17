@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
@@ -31,7 +32,7 @@ namespace JapeHttp
             return JsonSerializer.Deserialize<T>(Serialize(), new JsonSerializerOptions
             {
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-                PropertyNameCaseInsensitive = true
+                PropertyNameCaseInsensitive = true,
             });
         }
 
@@ -100,5 +101,7 @@ namespace JapeHttp
             using JsonDocument document = JsonDocument.ParseValue(ref reader);
             return document.RootElement.Clone();
         }
+
+        public void Write(Action<string> write) => write(Serialize());
     }
 }

@@ -18,7 +18,9 @@ namespace JapeWeb
             if (response.fromRoot)
             {
                 Add(response.requestPath, response.middleware);
-            } else {
+            } 
+            else 
+            {
                 Add(root.requestPath + response.requestPath, response.middleware);
             }
         }

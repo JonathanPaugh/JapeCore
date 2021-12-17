@@ -1,15 +1,10 @@
 ﻿using System.Collections.Generic;
-using System.Text.Json;
 using System.Threading.Tasks;
 using JapeHttp;
 using JapeCore;
-using JapeService;
 using JapeService.Responder;
 using MongoDB.Bson;
 using MongoDB.Driver;
-using System.Linq;
-using MongoDB.Bson.IO;
-using MongoDB.Bson.Serialization;
 
 namespace JapeDatabase
 {
@@ -18,6 +13,7 @@ namespace JapeDatabase
         private ResponseBank<string> MongoResponses => new()
         {
             { "get", ResponseMongoGet },
+            { "get-where", ResponseMongoGetWhere },
             { "insert", ResponseMongoInsert },
             { "update", ResponseMongoUpdate },
             { "remove", ResponseMongoRemove },
@@ -33,6 +29,19 @@ namespace JapeDatabase
             IMongoCollection<BsonDocument> collection = database.GetCollection<BsonDocument>(data.GetString("collection"));
 
             BsonDocument document = await collection.Find(Mongo.Filters.Id(data.GetString("id"))).FirstOrDefaultAsync();
+
+            return await transfer.Complete(Status.SuccessCode.Ok, document.ToJson());
+        }
+
+        public async Task<Request.Result> ResponseMongoGetWhere(Responder<string>.Transfer transfer, JsonData data, object[] args)
+        {
+            Log.Write("Get Where Request");
+
+            IMongoDatabase database = mongo.GetDatabase(data.GetString("store"));
+
+            IMongoCollection<BsonDocument> collection = database.GetCollection<BsonDocument>(data.GetString("collection"));
+
+            BsonDocument document = await collection.Find(Builders<BsonDocument>.Filter.Eq(data.GetString("field"), data.GetString("value"))).FirstOrDefaultAsync();
 
             return await transfer.Complete(Status.SuccessCode.Ok, document.ToJson());
         }

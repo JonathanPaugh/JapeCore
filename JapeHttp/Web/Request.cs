@@ -6,6 +6,8 @@ namespace JapeHttp
 {
     public abstract partial class Request
     {
+        public const string NoCache = "no-cache";
+
         public enum Method { Get, Post, Create, Delete };
 
         internal readonly HttpRequest request;
@@ -38,14 +40,14 @@ namespace JapeHttp
         protected async Task Close(int statusCode, string data)
         {
             response.StatusCode = statusCode;
-            if (data != null) { await response.Write(data); }
+            if (data != null) { await response.WriteAsync(data); }
             await response.CompleteAsync();
         }
 
         protected async Task Close(int statusCode, JsonData data)
         {
             response.StatusCode = statusCode;
-            if (data != null) { await response.WriteJson(data); }
+            if (data != null) { await response.WriteJsonAsync(data); }
             await response.CompleteAsync();
         }
 

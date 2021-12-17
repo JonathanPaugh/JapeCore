@@ -4,7 +4,7 @@ using JapeCore;
 
 namespace JapeWeb
 {
-    public class Templater
+    public class Templater : IWebComponent
     {
         public string Path { get; }
 

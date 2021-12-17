@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Data;
+using JapeCore;
 using JapeHttp;
 
 namespace JapeWeb
@@ -33,6 +34,17 @@ namespace JapeWeb
                 { "store", database },
                 { "collection", collection },
                 { "id", id }
+            }, response => response.ReadJson());
+        }
+
+        public JsonData MongoGetWhere(string database, string collection, string field, string value)
+        {
+            return MongoRequest("get-where", new JsonData
+            {
+                { "store", database },
+                { "collection", collection },
+                { "field", field },
+                { "value", value }
             }, response => response.ReadJson());
         }
 
