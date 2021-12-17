@@ -6,15 +6,21 @@ namespace JapeHttp
 {
     public class ApiResponse
     {
-        private readonly string data;
+        public string Data { get; }
 
-        private ApiResponse(string data)
+        private JsonData json;
+        public JsonData Json
         {
-            this.data = data;
-        } 
-        
-        public string Read() { return data; }
-        public JsonData ReadJson() { return new JsonData(Read()); }
+            get
+            {
+                if (Data == null) { return null; }
+                if (json != null) { return json; }
+                json = new JsonData(Data);
+                return json;
+            }
+        }
+
+        private ApiResponse(string data) { Data = data; } 
 
         internal static ApiResponse FromRequest(WebRequest request)
         {

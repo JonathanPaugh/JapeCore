@@ -25,8 +25,8 @@ namespace JapeWeb
         private readonly Middleware.RequestLookup<string> getRequestUser;
         private readonly Middleware.RequestLookup<string> getRequestPassword;
 
-        public delegate SignupData Signup(string user, string password, string salt);
-        public delegate LoginData Login(string user);
+        public delegate Task<SignupData> Signup(string user, string password, string salt);
+        public delegate Task<LoginData> Login(string user);
         public delegate void Success<in T>(Middleware.Request request, T data);
 
         internal Authenticator(Signup signup,
@@ -53,7 +53,7 @@ namespace JapeWeb
             SignupData data;
             try
             {
-                data = signup(user, Convert.ToBase64String(hash), Convert.ToBase64String(salt));
+                data = await signup(user, Convert.ToBase64String(hash), Convert.ToBase64String(salt));
             }
             catch
             {
@@ -76,7 +76,7 @@ namespace JapeWeb
             LoginData data;
             try
             {
-                data = login(getRequestUser(request));
+                data = await login(getRequestUser(request));
             }
             catch
             {

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Data;
+using System.Threading.Tasks;
 using JapeCore;
 using JapeHttp;
 
@@ -7,7 +8,7 @@ namespace JapeWeb
 {
     public partial class DatabaseApi
     {
-        private T MongoRequest<T>(string command, JsonData data, Func<ApiResponse, T> read)
+        private async Task<T> MongoRequest<T>(string command, JsonData data, Func<ApiResponse, T> read)
         {
             JsonData mongoData = new(data)
             {
@@ -15,7 +16,7 @@ namespace JapeWeb
                 { "command", command }
             };
 
-            ApiResponse response = Request(mongoData);
+            ApiResponse response = await Request(mongoData);
 
             try
             {
@@ -27,25 +28,25 @@ namespace JapeWeb
             }
         }
 
-        public JsonData MongoGet(string database, string collection, string id)
+        public async Task<JsonData> MongoGet(string database, string collection, string id)
         {
-            return MongoRequest("get", new JsonData
+            return await MongoRequest("get", new JsonData
             {
                 { "store", database },
                 { "collection", collection },
                 { "id", id }
-            }, response => response.ReadJson());
+            }, response => response.Json);
         }
 
-        public JsonData MongoGetWhere(string database, string collection, string field, string value)
+        public async Task<JsonData> MongoGetWhere(string database, string collection, string field, string value)
         {
-            return MongoRequest("get-where", new JsonData
+            return await MongoRequest("get-where", new JsonData
             {
                 { "store", database },
                 { "collection", collection },
                 { "field", field },
                 { "value", value }
-            }, response => response.ReadJson());
+            }, response => response.Json);
         }
 
         /// <summary>
@@ -55,46 +56,46 @@ namespace JapeWeb
         /// <param name="collection">The collection name.</param>
         /// <param name="data">The data to insert.</param>
         /// <returns>Id for the inserted data.</returns>
-        public string MongoInsert(string database, string collection, JsonData data)
+        public async Task<string> MongoInsert(string database, string collection, JsonData data)
         {
-            return MongoRequest("insert", new JsonData
+            return await MongoRequest("insert", new JsonData
             {
                 { "store", database },
                 { "collection", collection },
                 { "data", data }
-            }, response => response.Read());
+            }, response => response.Data);
         }
 
-        public JsonData MongoUpdate(string database, string collection, string id, JsonData data)
+        public async Task<JsonData> MongoUpdate(string database, string collection, string id, JsonData data)
         {
-            return MongoRequest("update", new JsonData
-            {
-                { "store", database },
-                { "collection", collection },
-                { "id", id },
-                { "data", data }
-            }, response => response.ReadJson());
-        }
-
-        public JsonData MongoRemove(string database, string collection, string id, string[] data)
-        {
-            return MongoRequest("remove", new JsonData
+            return await MongoRequest("update", new JsonData
             {
                 { "store", database },
                 { "collection", collection },
                 { "id", id },
                 { "data", data }
-            }, response => response.ReadJson());
+            }, response => response.Json);
         }
 
-        public JsonData MongoDelete(string database, string collection, string id)
+        public async Task<JsonData> MongoRemove(string database, string collection, string id, string[] data)
         {
-            return MongoRequest("delete", new JsonData
+            return await MongoRequest("remove", new JsonData
+            {
+                { "store", database },
+                { "collection", collection },
+                { "id", id },
+                { "data", data }
+            }, response => response.Json);
+        }
+
+        public async Task<JsonData> MongoDelete(string database, string collection, string id)
+        {
+            return await MongoRequest("delete", new JsonData
             {
                 { "store", database },
                 { "collection", collection },
                 { "id", id }
-            }, response => response.ReadJson());
+            }, response => response.Json);
         }
     }
 }
