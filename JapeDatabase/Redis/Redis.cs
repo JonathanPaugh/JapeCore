@@ -5,13 +5,13 @@ namespace JapeDatabase
 {
     public class Redis
     {
-        internal const string Host = "localhost";
-        internal const int Port = 6379;
+        public const string Host = "localhost";
+        public const int Port = 6379;
 
-        internal const string User = "default";
-        internal const string Password = "F9jXYBrqX4inwUPclA9HezWEb/YYCOjl8D7obBrZYV62Vx5SO90K3z+PpkbW8Z1hbOAOyF+fCyJXbACQ";
+        public const string User = "default";
+        public const string Password = "F9jXYBrqX4inwUPclA9HezWEb/YYCOjl8D7obBrZYV62Vx5SO90K3z+PpkbW8Z1hbOAOyF+fCyJXbACQ";
 
-        internal const bool UseSsl = false;
+        public const bool UseSsl = false;
 
         internal readonly Dictionary<string, Subscription> subscriptions = new();
 

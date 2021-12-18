@@ -9,20 +9,20 @@ namespace JapeDatabase
 {
     public partial class Mongo
     {
-        private const ConnectionStringScheme Scheme = ConnectionStringScheme.MongoDB;
+        public const ConnectionStringScheme Scheme = ConnectionStringScheme.MongoDB;
 
-        internal const string Host = "localhost";
-        internal const int Port = 27017;
+        public const string Host = "localhost";
+        public const int Port = 27017;
 
-        internal const string User = "default";
-        internal const string Password = "3BBW8IJXuR6Ig8MDaOC6ARN4MQr9Tnpu4XBUwJdc9t3W8EIjWN7+YGkuefwB+hNBXpngUvdMQJ2/tj1H";
+        public const string User = "default";
+        public const string Password = "3BBW8IJXuR6Ig8MDaOC6ARN4MQr9Tnpu4XBUwJdc9t3W8EIjWN7+YGkuefwB+hNBXpngUvdMQJ2/tj1H";
 
-        internal const string Database = "admin";
+        public const string Database = "admin";
 
-        internal const string ReplicaSet = null;
+        public const string ReplicaSet = null;
 
-        internal const bool UseSsl = false;
-        internal const bool InsecureSsl = true;
+        public const bool UseSsl = false;
+        public const bool InsecureSsl = true;
 
         private static string CertificateFile => Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "mongo.crt");
 
