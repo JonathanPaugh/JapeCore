@@ -28,7 +28,10 @@ namespace JapeDatabase
 
         protected override async Task OnStartAsync()
         {
-            Database database = new(http, https, env, true, true);
+            Database database = new(http, https, Environment.GetEnvironmentVariable(env));
+            database.UseMongo(Mongo.Host, Mongo.Port, Mongo.User, Mongo.Password, Mongo.Database, Mongo.UseSsl, Mongo.ReplicaSet);
+            database.UseRedis(Redis.Host, Redis.Port, Redis.User, Redis.Password, Redis.UseSsl);
+
             await database.Start();
         }
     }

@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 
 namespace JapeWeb
 {
-    public partial class ResponseTree : IWebComponent
+    public partial class ResponseTree : WebComponent
     {
         private readonly Branch root;
 
@@ -13,19 +14,29 @@ namespace JapeWeb
             root = new Branch(requestPath, middleware);
         }
 
+        internal override void Setup(IApplicationBuilder app)
+        {
+            app.Use(async (context, next) =>
+            {
+                Middleware.Result result = await Invoke(context);
+                if (result.Prevented) { return; }
+                await next.Invoke();
+            });
+        }
+
         public void Add(Response response)
         {
             if (response.fromRoot)
             {
-                Add(response.requestPath, response.middleware);
+                AddLow(response.requestPath, response.middleware);
             } 
             else 
             {
-                Add(root.requestPath + response.requestPath, response.middleware);
+                AddLow(root.requestPath + response.requestPath, response.middleware);
             }
         }
 
-        private void Add(PathString requestPath, Middleware response)
+        private void AddLow(PathString requestPath, Middleware response)
         {
             if (!requestPath.StartsWithSegments(root.requestPath, out PathString remainingPath))
             {
@@ -35,16 +46,13 @@ namespace JapeWeb
             root.Insert(remainingPath, response);
         }
 
-        internal async Task<Middleware.Result> Invoke(HttpContext context)
+        private async Task<Middleware.Result> Invoke(HttpContext context)
         {
             Result result = await root.Respond(context.Request.Path, context);
             return result.MiddlewareResult;
         }
 
-        public void Write(Action<string> write)
-        {
-            root.WriteChildren(write, string.Empty);
-        }
+        public void Write(Action<string> write) => root.WriteChildren(write, string.Empty);
 
         public static Response RootResponse(PathString requestPath) => new(true, requestPath, null);
         public static Response RootResponse(PathString requestPath, Middleware.Response response) => new(true, requestPath, new Middleware(response));

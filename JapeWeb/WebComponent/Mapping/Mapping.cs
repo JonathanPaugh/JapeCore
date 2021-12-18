@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Routing;
 
 namespace JapeWeb
 {
-    public class Mapping : IWebComponent
+    public class Mapping : WebComponent
     {
         public enum Method { Get, Post, Any }
 
@@ -27,7 +27,12 @@ namespace JapeWeb
             this.read = read;
         }
 
-        internal void Build(IEndpointRouteBuilder builder)
+        internal override void Setup(IApplicationBuilder app)
+        {
+            app.UseEndpoints(Build);
+        }
+
+        private void Build(IEndpointRouteBuilder builder)
         {
             switch (method)
             {

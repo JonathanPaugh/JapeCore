@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using JapeCore;
 using JapeHttp;
@@ -12,6 +11,7 @@ namespace JapeDatabase
     public partial class Database : RestService
     {
         private const string DefaultEnv = "API_JAPE_DATABASE";
+        private const string ResponseIndexer = "command";
 
         public const byte MongoIndex = 0;
         public const byte RedisIndex = 1;
@@ -30,36 +30,30 @@ namespace JapeDatabase
             CommandArg<string>.CreateOptional("--env", "Environment variable for key", () => DefaultEnv),
         };
 
-        protected string Key => Environment.GetEnvironmentVariable(env);
-
-        private readonly string env;
-
-        private readonly bool useMongo;
-        private readonly bool useRedis;
+        private readonly string key;
 
         protected Mongo mongo;
         protected Redis redis;
 
-        public Database(int http, int https, string env, bool useMongo, bool useRedis) : base(http, https) {
-            this.env = env;
-            this.useMongo = useMongo;
-            this.useRedis = useRedis;
+        public Database(int http, int https, string key) : base(http, https) {
+            this.key = key;
         }
 
-        protected override async Task OnStartAsync()
-        {
-            if (useMongo)
-            {
-                mongo = Mongo.Connect(Mongo.Host, Mongo.Port, Mongo.User, Mongo.Password, Mongo.Database, Mongo.UseSsl, Mongo.ReplicaSet);
-            }
+        public void UseMongo(string connectionString) => mongo = Mongo.Connect(connectionString);
+        public void UseMongo(string host, int port, string user, string password, string database, bool useSSL, string replicaSet) => mongo = Mongo.Connect(host, 
+                                                                                                                                                            port, 
+                                                                                                                                                            user, 
+                                                                                                                                                            password, 
+                                                                                                                                                            database, 
+                                                                                                                                                            useSSL, 
+                                                                                                                                                            replicaSet);
 
-            if (useRedis)
-            {
-                redis = Redis.Connect(Redis.Host, Redis.Port, Redis.User, Redis.Password, Redis.UseSsl);
-            }
-
-            await Task.CompletedTask;
-        }
+        public void UseRedis(string connectionString) => redis = Redis.Connect(connectionString);
+        public void UseRedis(string host, int port, string user, string password, bool useSsl) => redis = Redis.Connect(host,
+                                                                                                                        port,
+                                                                                                                        user,
+                                                                                                                        password,
+                                                                                                                        useSsl);
 
         protected override async Task OnRequest(HttpContext context)
         {
@@ -68,28 +62,34 @@ namespace JapeDatabase
 
         protected override ResponderList Responders(ResponderFactory factory)
         {
-            IResponder mongoResponder = factory.Create(MongoResponderName, data => data.GetString("command").ToLowerInvariant()).Responses(MongoResponses).Build();
-            IResponder redisResponder = factory.Create(RedisResponderName, data => data.GetString("command").ToLowerInvariant()).Responses(RedisResponses).Build();
+            IResponder mongoResponder = factory.Create(MongoResponderName, data => data.GetString(ResponseIndexer).ToLowerInvariant())
+                                               .Responses(MongoResponses)
+                                               .Build();
+
+            IResponder redisResponder = factory.Create(RedisResponderName, data => data.GetString(ResponseIndexer).ToLowerInvariant())
+                                               .Responses(RedisResponses)
+                                               .Build();
+
+            IResponder director = factory.Create(DirectorName, data => data.GetByte("index")).Responses(new ResponseBank<byte>
+            {
+                { MongoIndex, mongoResponder.Invoke },
+                { RedisIndex, redisResponder.Invoke }
+            }).InterceptResponse(async (intercept, data, _) =>
+            {
+                string key = data.GetString("key");
+
+                if (this.key != key)
+                {
+                    Log.Write("Database Request Error: Invalid Key");
+                    return await intercept.Abort(Status.ErrorCode.Forbidden);
+                }
+
+                return intercept.Pass();
+            }).Build();
 
             return new ResponderList
             {
-                factory.Create(DirectorName, data => data.GetByte("index")).Responses(new ResponseBank<byte>
-                {
-                    { 0, mongoResponder.Invoke },
-                    { 1, redisResponder.Invoke }
-                }).InterceptResponse(async (intercept, data, _) =>
-                {
-                    string key = data.GetString("key");
-
-                    if (Key != key)
-                    {
-                        Log.Write("Database Request Error: Invalid Key");
-                        return await intercept.Abort(Status.ErrorCode.Forbidden);
-                    }
-
-                    return intercept.Pass();
-                }).Build(),
-
+                director,
                 mongoResponder,
                 redisResponder
             };

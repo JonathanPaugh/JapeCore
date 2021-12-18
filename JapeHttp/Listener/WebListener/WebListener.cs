@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using JapeCore;
@@ -20,8 +19,7 @@ namespace JapeHttp
 
         public AccessLogMode AccessLogging { get; set; } = AccessLogMode.LogOnly;
 
-        private readonly string staticDirectory = "public";
-        private readonly string landingPage = "index.html";
+        private readonly string staticDirectory = "./public";
 
         private readonly Logger accessLogger = Log.Create("access.log");
 
@@ -29,15 +27,14 @@ namespace JapeHttp
         private readonly PhysicalFileProvider staticFileProvider;
 
         private Action<IApplicationBuilder> setup;
-        private Action<SessionOptions> session;
+        private Action<IServiceCollection> services;
 
         private bool buffering;
         private bool caching;
 
-        public WebListener(string staticDirectory = null, string landingPage = null)
+        public WebListener(string staticDirectory = null)
         {
             if (staticDirectory != null) { this.staticDirectory = staticDirectory; }
-            if (landingPage != null) { this.landingPage = landingPage; }
 
             if (!Directory.Exists(StaticPath))
             {
@@ -50,18 +47,32 @@ namespace JapeHttp
             staticFileProvider = new PhysicalFileProvider(StaticPath);
         }
 
-        public async Task<string> ReadFile(string path)
+        public string ReadFile(string path)
         {
             IFileInfo fileInfo = baseFileProvider.GetFileInfo(SystemPath.Format(path));
             if (!fileInfo.Exists) { return null; }
-            return await fileInfo.Read();
+            return fileInfo.Read();
         }
 
-        public async Task<string> ReadStaticFile(string path)
+        public async Task<string> ReadFileAsync(string path)
+        {
+            IFileInfo fileInfo = baseFileProvider.GetFileInfo(SystemPath.Format(path));
+            if (!fileInfo.Exists) { return null; }
+            return await fileInfo.ReadAsync();
+        }
+
+        public string ReadStaticFile(string path)
         {
             IFileInfo fileInfo = staticFileProvider.GetFileInfo(SystemPath.Format(path));
             if (!fileInfo.Exists) { return null; }
-            return await fileInfo.Read();
+            return fileInfo.Read();
+        }
+
+        public async Task<string> ReadStaticFileAsync(string path)
+        {
+            IFileInfo fileInfo = staticFileProvider.GetFileInfo(SystemPath.Format(path));
+            if (!fileInfo.Exists) { return null; }
+            return await fileInfo.ReadAsync();
         }
 
         public void UseSetup(Action<IApplicationBuilder> setup)
@@ -70,10 +81,10 @@ namespace JapeHttp
             this.setup = setup;
         }
 
-        public void UseSession(Action<SessionOptions> session)
+        public void UseServices(Action<IServiceCollection> services)
         {
-            if (PreventIfConstructed(nameof(UseSession))) { return; }
-            this.session = session;
+            if (PreventIfConstructed(nameof(UseServices))) { return; }
+            this.services = services;
         }
 
         public void EnableBuffering()
@@ -90,21 +101,12 @@ namespace JapeHttp
 
         protected override void Services(IServiceCollection services)
         {
-            if (session != null)
-            {
-                services.AddDistributedMemoryCache();
-                services.AddSession(session);
-            }
+            this.services?.Invoke(services);
         }
 
         protected sealed override void Setup(IApplicationBuilder app)
         {
             app.UseRouting();
-
-            if (session != null)
-            {
-                app.UseSession();
-            }
 
             app.Use(async (context, next) =>
             {
@@ -114,23 +116,9 @@ namespace JapeHttp
 
             setup?.Invoke(app);
 
-            SetupLandingPage(app);
-
             app.UseStaticFiles(new StaticFileOptions
             {
                 FileProvider = staticFileProvider,
-            });
-        }
-
-        private void SetupLandingPage(IApplicationBuilder app)
-        {
-            app.UseEndpoints(endpoints =>
-            {
-                endpoints.MapGet("/", async context =>
-                {
-                    string data = await ReadStaticFile(landingPage);
-                    await HttpResponseWritingExtensions.WriteAsync(context.Response, data);
-                });
             });
         }
 

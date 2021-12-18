@@ -65,7 +65,7 @@ namespace JapeWeb
                 if (string.IsNullOrEmpty(remainingPath))
                 { 
                     if (Middleware == null) { return Result.NotFound; }
-                    Middleware.Result middlewareResult = await Middleware.Invoke(context);
+                    Middleware.Result middlewareResult = await Middleware.InvokeExternal(Middleware, context);
                     return Result.Found(middlewareResult);
                 }
 

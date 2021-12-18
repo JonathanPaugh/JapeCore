@@ -5,11 +5,10 @@ using System.Threading.Tasks;
 using JapeCore;
 using JapeHttp;
 using Microsoft.AspNetCore.Cryptography.KeyDerivation;
-using Microsoft.AspNetCore.Http;
 
 namespace JapeWeb
 {
-    public class Authenticator : IWebComponent
+    public partial class Authenticator
     {
         public const int ByteSize = 8;
         public const int SaltSize = 128;
@@ -29,10 +28,10 @@ namespace JapeWeb
         public delegate Task<LoginData> Login(string user);
         public delegate void Success<in T>(Middleware.Request request, T data);
 
-        internal Authenticator(Signup signup,
-                               Login login,
-                               Middleware.RequestLookup<string> getRequestUser, 
-                               Middleware.RequestLookup<string> getRequestPassword)
+        public Authenticator(Signup signup,
+                             Login login,
+                             Middleware.RequestLookup<string> getRequestUser, 
+                             Middleware.RequestLookup<string> getRequestPassword)
         {
             this.signup = signup;
             this.login = login;
@@ -43,7 +42,7 @@ namespace JapeWeb
         public void SignupSuccess(Success<SignupData> signupSuccess) { this.signupSuccess = signupSuccess; }
         public void LoginSuccess(Success<LoginData> loginSuccess) { this.loginSuccess = loginSuccess; }
 
-        internal async Task<Middleware.Result> ResponseSignup(Middleware.Request request)
+        public async Task<Middleware.Result> ResponseSignup(Middleware.Request request)
         {
             string user = getRequestUser(request);
             string password = getRequestPassword(request);
@@ -71,7 +70,7 @@ namespace JapeWeb
             return await request.Complete(Status.SuccessCode.Ok, data.Id);
         }
 
-        internal async Task<Middleware.Result> ResponseLogin(Middleware.Request request)
+        public async Task<Middleware.Result> ResponseLogin(Middleware.Request request)
         {
             LoginData data;
             try
@@ -113,36 +112,6 @@ namespace JapeWeb
             using RNGCryptoServiceProvider encrypter = new();
             encrypter.GetNonZeroBytes(salt);
             return HashSalt(value, salt);
-        }
-
-        public class SignupData
-        {
-            public string Id { get; }
-            public object[] Args { get; }
-
-            public SignupData(string id, params object[] args)
-            {
-                Id = id;
-                Args = args;
-            }
-        }
-
-        public class LoginData
-        {
-            public string Id { get; }
-            public string User { get; }
-            public string Password { get; }
-            public string Salt { get; }
-            public object[] Args { get; }
-
-            public LoginData(string id, string user, string password, string salt, params object[] args)
-            {
-                Id = id;
-                User = user;
-                Password = password;
-                Salt = salt;
-                Args = args;
-            }
         }
     }
 }

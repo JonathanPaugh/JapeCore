@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Threading.Tasks;
 using JapeHttp;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 
 namespace JapeWeb
 {
-    public partial class Middleware : IWebComponent
+    public partial class Middleware : WebComponent
     {
         public bool Skip { get; set; }
 
@@ -19,7 +20,17 @@ namespace JapeWeb
         internal Middleware(Response response) { this.response = response; }
         internal Middleware(ResponseAsync response) { responseAsync = response; }
 
-        internal async Task<Result> Invoke(HttpContext context)
+        internal override void Setup(IApplicationBuilder app)
+        {
+            app.Use(async (context, next) =>
+            {
+                Result result = await Invoke(context);
+                if (result.Prevented) { return; }
+                await next.Invoke();
+            });
+        }
+
+        private async Task<Result> Invoke(HttpContext context)
         {
             if (Skip)
             {
@@ -44,5 +55,7 @@ namespace JapeWeb
 
             throw new Exception("Invalid Middleware State");
         }
+
+        internal static async Task<Result> InvokeExternal(Middleware middleware, HttpContext context) => await middleware.Invoke(context);
     }
 }

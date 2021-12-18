@@ -5,9 +5,9 @@ using System.Threading.Tasks;
 using JapeCore;
 using JapeHttp;
 using JapeService;
-using JapeWeb.WebComponent;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace JapeWeb
 {
@@ -46,12 +46,8 @@ namespace JapeWeb
         private readonly int http;
         private readonly int https;
 
-        private readonly List<Middleware> middlewares = new();
-        private readonly List<Mapping> mappings = new();
-        private readonly List<Routing> routings = new();
-        private readonly List<ResponseTree> responseTrees = new();
-        private readonly List<Authenticator> authenticators = new();
-        private readonly List<Templater> templaters = new();
+        private bool setupWebComponents;
+        private readonly List<WebComponent> webComponents = new();
 
         private WebListener listener;
 
@@ -59,153 +55,26 @@ namespace JapeWeb
         {
             this.http = http;
             this.https = https;
-
-            SetupComponents();
         }
 
         protected override Listener ServiceListener()
         {
-            listener = new WebListener(StaticDirectory, LandingPage);
+            listener = new WebListener(StaticDirectory);
 
             if (Buffering) { listener.EnableBuffering(); }
             if (Caching) { listener.EnableCaching(); }
 
             listener.UseSetup(SetupLow);
-            listener.UseSession(SessionLow);
+            listener.UseServices(ServicesLow);
 
             return listener;
         }
 
-        protected async Task<string> ReadStaticFile(string path) => await listener.ReadStaticFile(path);
-        protected async Task<string> ReadServerFile(string path) => await listener.ReadFile(path);
+        protected string ReadStaticFile(string path) => listener.ReadStaticFile(path);
+        protected async Task<string> ReadStaticFileAsync(string path) => await listener.ReadStaticFileAsync(path);
 
-        public Middleware Use(Middleware.Response response)
-        {
-            if (PreventIfRunning($"{nameof(Use)}Middleware")) { throw new WebComponentException(); }
-
-            Middleware middleware = new(response);
-            middlewares.Add(middleware);
-            return middleware;
-        }
-
-        public Middleware UseAsync(Middleware.ResponseAsync response)
-        {
-            if (PreventIfRunning($"{nameof(UseAsync)}Middleware")) { throw new WebComponentException(); }
-
-            Middleware middleware = new(response);
-            middlewares.Add(middleware);
-            return middleware;
-        }
-
-        public Routing Route(PathString requestPath, string staticPath)
-        {
-            if (PreventIfRunning(nameof(Route))) { throw new WebComponentException(); }
-
-            return RouteLow(requestPath, staticPath, null);
-        }
-
-        public Routing Route(PathString requestPath, string staticPath, Middleware.Response response)
-        {
-            if (PreventIfRunning(nameof(Route))) { throw new WebComponentException(); }
-
-            return RouteLow(requestPath, staticPath, new Middleware(response));
-        }
-
-        public Routing Route(PathString requestPath, string staticPath, Middleware.ResponseAsync response)
-        {
-            if (PreventIfRunning(nameof(Route))) { throw new WebComponentException(); }
-
-            return RouteLow(requestPath, staticPath, new Middleware(response));
-        }
-
-        private Routing RouteLow(PathString requestPath, string staticPath, Middleware middleware)
-        {
-            if (PreventIfRunning(nameof(RouteLow))) { throw new WebComponentException(); }
-
-            Routing routing = new(requestPath, Path.Combine(Root, SystemPath.Format(staticPath)), middleware);
-            routings.Add(routing);
-            return routing;
-        }
-
-        public Mapping Map(PathString requestPath, string responsePath, Mapping.Read read)
-        {
-            if (PreventIfRunning(nameof(Map))) { throw new WebComponentException(); }
-
-            Mapping mapping = new(Mapping.Method.Any, requestPath, responsePath, read);
-            mappings.Add(mapping);
-            return mapping;
-        }
-
-        public Mapping MapGet(PathString requestPath, string responsePath, Mapping.Read read)
-        {
-            if (PreventIfRunning(nameof(MapGet))) { throw new WebComponentException(); }
-
-            Mapping mapping = new(Mapping.Method.Get, requestPath, responsePath, read);
-            mappings.Add(mapping);
-            return mapping;
-        }
-
-        public Mapping MapPost(PathString requestPath, string responsePath, Mapping.Read read)
-        {
-            if (PreventIfRunning(nameof(MapPost))) { throw new WebComponentException(); }
-
-            Mapping mapping = new(Mapping.Method.Post, requestPath, responsePath, read);
-            mappings.Add(mapping);
-            return mapping;
-        }
-
-        public ResponseTree CreateResponseTree(PathString rootPath, Middleware.Response rootResponse, params ResponseTree.Response[] responses)
-        {
-            if (PreventIfRunning(nameof(CreateResponseTree))) { throw new WebComponentException(); }
-
-            return CreateResponseTreeLow(rootPath, new Middleware(rootResponse), responses);
-        }
-
-        public ResponseTree CreateResponseTree(PathString rootPath, Middleware.ResponseAsync rootResponse, params ResponseTree.Response[] responses)
-        {
-            if (PreventIfRunning(nameof(CreateResponseTree))) { throw new WebComponentException(); }
-
-            return CreateResponseTreeLow(rootPath, new Middleware(rootResponse), responses);
-        }
-
-        public ResponseTree CreateResponseTree(PathString rootPath, params ResponseTree.Response[] responses)
-        {
-            if (PreventIfRunning(nameof(CreateResponseTree))) { throw new WebComponentException(); }
-
-            return CreateResponseTreeLow(rootPath, null, responses);
-        }
-
-        private ResponseTree CreateResponseTreeLow(PathString rootPath, Middleware rootMiddleware, params ResponseTree.Response[] responses)
-        {
-            if (PreventIfRunning(nameof(CreateResponseTreeLow))) { throw new WebComponentException(); }
-
-            ResponseTree tree = new(rootPath, rootMiddleware);
-            foreach (ResponseTree.Response response in responses)
-            {
-                tree.Add(response);
-            }
-            responseTrees.Add(tree);
-            return tree;
-        }
-
-        public Authenticator CreateAuthenticator(Authenticator.Signup signup, 
-                                                 Authenticator.Login login, 
-                                                 Middleware.RequestLookup<string> getRequestUser, 
-                                                 Middleware.RequestLookup<string> getRequestPassword,
-                                                 AuthenticatorOptions options)
-        {
-            if (PreventIfRunning(nameof(CreateAuthenticator))) { throw new WebComponentException(); }
-
-            Authenticator authenticator = new(signup, login, getRequestUser, getRequestPassword);
-
-            CreateResponseTreeLow(options.RequestPath, 
-                                  null, 
-                                  ResponseTree.RelativeResponse(options.SignupPath, authenticator.ResponseSignup), 
-                                  ResponseTree.RelativeResponse(options.LoginPath, authenticator.ResponseLogin));
-
-            authenticators.Add(authenticator);
-            return authenticator;
-        }
+        protected string ReadServerFile(string path) => listener.ReadFile(path);
+        protected async Task<string> ReadServerFileAsync(string path) => await listener.ReadFileAsync(path);
 
         protected Templater CreateTemplater(string staticPath)
         {
@@ -214,80 +83,150 @@ namespace JapeWeb
                 throw new DirectoryNotFoundException("Template directory does not exist");
             }
             
-            Templater templater = new(staticPath, ReadServerFile);
-            templaters.Add(templater);
+            Templater templater = new(staticPath, ReadServerFile, ReadServerFileAsync);
             return templater;
+        }
+
+        public Middleware Use(Middleware.Response response)
+        {
+            if (!setupWebComponents) { WebComponentException.SetupException(); }
+
+            Middleware middleware = new(response);
+            return middleware;
+        }
+
+        public Middleware UseAsync(Middleware.ResponseAsync response)
+        {
+            if (!setupWebComponents) { WebComponentException.SetupException(); }
+
+            Middleware middleware = new(response);
+            return middleware;
+        }
+
+        public Routing Route(PathString requestPath, string staticPath)
+        {
+            if (!setupWebComponents) { WebComponentException.SetupException(); }
+
+            return RouteLow(requestPath, staticPath, null);
+        }
+
+        public Routing Route(PathString requestPath, string staticPath, Middleware.Response response)
+        {
+            if (!setupWebComponents) { WebComponentException.SetupException(); }
+
+            return RouteLow(requestPath, staticPath, new Middleware(response));
+        }
+
+        public Routing Route(PathString requestPath, string staticPath, Middleware.ResponseAsync response)
+        {
+            if (!setupWebComponents) { WebComponentException.SetupException(); }
+
+            return RouteLow(requestPath, staticPath, new Middleware(response));
+        }
+
+        private Routing RouteLow(PathString requestPath, string staticPath, Middleware middleware)
+        {
+            if (!setupWebComponents) { WebComponentException.SetupException(); }
+
+            Routing routing = new(requestPath, Path.Combine(Root, SystemPath.Format(staticPath)), middleware);
+            return routing;
+        }
+
+        public Mapping Map(PathString requestPath, string responsePath, Mapping.Read read)
+        {
+            if (!setupWebComponents) { WebComponentException.SetupException(); }
+
+            Mapping mapping = new(Mapping.Method.Any, requestPath, responsePath, read);
+            return mapping;
+        }
+
+        public Mapping MapGet(PathString requestPath, string responsePath, Mapping.Read read)
+        {
+            if (!setupWebComponents) { WebComponentException.SetupException(); }
+
+            Mapping mapping = new(Mapping.Method.Get, requestPath, responsePath, read);
+            return mapping;
+        }
+
+        public Mapping MapPost(PathString requestPath, string responsePath, Mapping.Read read)
+        {
+            if (!setupWebComponents) { WebComponentException.SetupException(); }
+
+            Mapping mapping = new(Mapping.Method.Post, requestPath, responsePath, read);
+            return mapping;
+        }
+
+        public ResponseTree CreateResponseTree(PathString rootPath, Middleware.Response rootResponse, params ResponseTree.Response[] responses)
+        {
+            if (!setupWebComponents) { WebComponentException.SetupException(); }
+
+            return CreateResponseTreeLow(rootPath, new Middleware(rootResponse), responses);
+        }
+
+        public ResponseTree CreateResponseTree(PathString rootPath, Middleware.ResponseAsync rootResponse, params ResponseTree.Response[] responses)
+        {
+            if (!setupWebComponents) { WebComponentException.SetupException(); }
+
+            return CreateResponseTreeLow(rootPath, new Middleware(rootResponse), responses);
+        }
+
+        public ResponseTree CreateResponseTree(PathString rootPath, params ResponseTree.Response[] responses)
+        {
+            if (!setupWebComponents) { WebComponentException.SetupException(); }
+
+            return CreateResponseTreeLow(rootPath, null, responses);
+        }
+
+        private ResponseTree CreateResponseTreeLow(PathString rootPath, Middleware rootMiddleware, params ResponseTree.Response[] responses)
+        {
+            if (!setupWebComponents) { WebComponentException.SetupException(); }
+
+            ResponseTree tree = new(rootPath, rootMiddleware);
+            foreach (ResponseTree.Response response in responses)
+            {
+                tree.Add(response);
+            }
+
+            return tree;
         }
 
         private void SetupLow(IApplicationBuilder app)
         {
+            app.UseSession();
             Setup(app);
-            SetupMiddleware(app);
-            SetupResponseTree(app);
-            SetupMapping(app);
-            SetupRouting(app);
+            SetupComponents(app);
+            SetupLandingPage(app);
         }
 
-        private void SetupComponents()
+        private void ServicesLow(IServiceCollection services)
         {
-            IEnumerator<IWebComponent> components = Components();
-            while (components.MoveNext()) {}
+            services.AddDistributedMemoryCache();
+            services.AddSession(SessionLow);
+            Services(services);
         }
 
-        private void SetupMiddleware(IApplicationBuilder app)
+        private void SetupComponents(IApplicationBuilder app)
         {
-            foreach (Middleware middleware in middlewares)
+            setupWebComponents = true;
+            IEnumerator<WebComponent> components = Components();
+            while (components.MoveNext())
             {
-                app.Use(async (context, next) =>
+                components.Current.Setup(app);
+                webComponents.Add(components.Current);
+            }
+            setupWebComponents = false;
+        }
+
+        private void SetupLandingPage(IApplicationBuilder app)
+        {
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapGet("/", async context =>
                 {
-                    Middleware.Result result = await middleware.Invoke(context);
-                    if (result.Prevented) { return; }
-                    await next.Invoke();
+                    string data = await ReadStaticFileAsync(LandingPage);
+                    await HttpResponseWritingExtensions.WriteAsync(context.Response, data);
                 });
-            }
-        }
-
-        private void SetupResponseTree(IApplicationBuilder app)
-        {
-            foreach (ResponseTree tree in responseTrees)
-            {
-                app.Use(async (context, next) =>
-                {
-                    Middleware.Result result = await tree.Invoke(context);
-                    if (result.Prevented) { return; }
-                    await next.Invoke();
-                });
-            }
-        }
-
-        private void SetupMapping(IApplicationBuilder app)
-        {
-            foreach (Mapping mapping in mappings)
-            {
-                app.UseEndpoints(mapping.Build);
-            }
-        }
-
-        private void SetupRouting(IApplicationBuilder app)
-        {
-            foreach (Routing routing in routings)
-            {
-                if (routing.UseMiddleware)
-                {
-                    app.Use(async (context, next) =>
-                    {
-                        Middleware.Result result = await routing.Invoke(context);
-                        if (result.Prevented) { return; }
-                        await next.Invoke();
-                    });
-                }
-
-                app.UseStaticFiles(new StaticFileOptions
-                {
-                    RequestPath = routing.requestPath,
-                    FileProvider = routing.fileProvider
-                });
-            }
+            });
         }
 
         private void SessionLow(SessionOptions options)
@@ -300,23 +239,10 @@ namespace JapeWeb
             Session(options);
         }
 
-        protected virtual void Setup(IApplicationBuilder app) {}
+        protected virtual void Setup(IApplicationBuilder app) { }
+        protected virtual void Services(IServiceCollection services) {}
         protected virtual void Session(SessionOptions options) {}
 
-        protected virtual IEnumerator<IWebComponent> Components() { yield return null; }
-
-        protected bool PreventIfRunning(string name) => Prevention("running", name, () => listener.Running);
-        protected bool PreventIfIdle(string name) => Prevention("idle", name, () => !listener.Running);
-
-        private static bool Prevention(string message, string name, Func<bool> condition)
-        {
-            if (condition())
-            {
-                Log.Write($"Unable to execute action while web server is {message}: {name}");
-                return true;
-            }
-
-            return false;
-        }
+        protected virtual IEnumerator<WebComponent> Components() { yield return null; }
     }
 }
