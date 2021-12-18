@@ -1,6 +1,7 @@
 ﻿using System.IO;
 using System.Net;
 using System.Threading.Tasks;
+using JapeCore;
 
 namespace JapeHttp
 {
@@ -25,20 +26,14 @@ namespace JapeHttp
         internal static ApiResponse FromRequest(WebRequest request)
         {
             using WebResponse response = request.GetResponse();
-            using StreamReader reader = new(response.GetResponseStream());
-
-            string data = reader.ReadToEnd();
-
+            string data = response.GetResponseStream().Read();
             return new ApiResponse(data);
         }
 
         internal static async Task<ApiResponse> FromRequestAsync(WebRequest request)
         {
             using WebResponse response = await request.GetResponseAsync();
-            using StreamReader reader = new(response.GetResponseStream());
-
-            string data = await reader.ReadToEndAsync();
-
+            string data = await response.GetResponseStream().ReadAsync();
             return new ApiResponse(data);
         }
     }

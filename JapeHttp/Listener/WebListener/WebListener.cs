@@ -51,28 +51,28 @@ namespace JapeHttp
         {
             IFileInfo fileInfo = baseFileProvider.GetFileInfo(SystemPath.Format(path));
             if (!fileInfo.Exists) { return null; }
-            return fileInfo.Read();
+            return fileInfo.CreateReadStream().Read();
         }
 
         public async Task<string> ReadFileAsync(string path)
         {
             IFileInfo fileInfo = baseFileProvider.GetFileInfo(SystemPath.Format(path));
             if (!fileInfo.Exists) { return null; }
-            return await fileInfo.ReadAsync();
+            return await fileInfo.CreateReadStream().ReadAsync();
         }
 
         public string ReadStaticFile(string path)
         {
             IFileInfo fileInfo = staticFileProvider.GetFileInfo(SystemPath.Format(path));
             if (!fileInfo.Exists) { return null; }
-            return fileInfo.Read();
+            return fileInfo.CreateReadStream().Read();
         }
 
         public async Task<string> ReadStaticFileAsync(string path)
         {
             IFileInfo fileInfo = staticFileProvider.GetFileInfo(SystemPath.Format(path));
             if (!fileInfo.Exists) { return null; }
-            return await fileInfo.ReadAsync();
+            return await fileInfo.CreateReadStream().ReadAsync();
         }
 
         public void UseSetup(Action<IApplicationBuilder> setup)

@@ -1,6 +1,7 @@
 ﻿using System.IO;
 using System.Net;
 using System.Threading.Tasks;
+using JapeCore;
 
 namespace JapeHttp
 {
@@ -50,16 +51,28 @@ namespace JapeHttp
 
         public ApiRequest Write(string data)
         {
-            using (StreamWriter writer = new(request.GetRequestStream()))
-            {
-                writer.Write(data);
-            }
+            request.GetRequestStream().Write(data);
             return this;
         }
 
         public ApiRequest WriteJson(JsonData data)
         {
-            return Write(data.Serialize());
+            request.GetRequestStream().WriteJson(data);
+            return this;
+        }
+
+        public async Task<ApiRequest> WriteAsync(string data)
+        {
+            Stream stream = await request.GetRequestStreamAsync();
+            await stream.WriteAsync(data);
+            return this;
+        }
+
+        public async Task<ApiRequest> WriteJsonAsync(JsonData data)
+        {
+            Stream stream = await request.GetRequestStreamAsync();
+            await stream.WriteJsonAsync(data);
+            return this;
         }
 
         public ApiResponse GetResponse() => ApiResponse.FromRequest(request);

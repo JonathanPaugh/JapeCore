@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using JapeCore;
 using JapeHttp;
 
 namespace JapeService.Responder

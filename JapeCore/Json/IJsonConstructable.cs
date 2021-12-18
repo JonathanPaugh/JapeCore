@@ -1,4 +1,4 @@
-﻿namespace JapeHttp
+﻿namespace JapeCore
 {
     public interface IJsonConstructable {}
 }
