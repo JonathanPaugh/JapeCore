@@ -22,6 +22,8 @@ namespace JapeWeb
         protected virtual bool Buffering => true;
         protected virtual bool Caching => true;
 
+        private enum Phase { None, SetupMain, SetupComponents, SetupServices, Ready }
+
         protected override string StartString
         {
             get
@@ -46,7 +48,8 @@ namespace JapeWeb
         private readonly int http;
         private readonly int https;
 
-        private bool setupWebComponents;
+        private Phase phase = Phase.None;
+
         private readonly List<WebComponent> webComponents = new();
 
         private WebListener listener;
@@ -66,6 +69,7 @@ namespace JapeWeb
 
             listener.UseSetup(SetupLow);
             listener.UseServices(ServicesLow);
+            phase = Phase.Ready;
 
             return listener;
         }
@@ -89,7 +93,7 @@ namespace JapeWeb
 
         public Middleware Use(Middleware.Response response)
         {
-            if (!setupWebComponents) { WebComponentException.SetupException(); }
+            if (phase != Phase.SetupComponents) { WebComponentException.SetupException(); }
 
             Middleware middleware = new(response);
             return middleware;
@@ -97,7 +101,7 @@ namespace JapeWeb
 
         public Middleware UseAsync(Middleware.ResponseAsync response)
         {
-            if (!setupWebComponents) { WebComponentException.SetupException(); }
+            if (phase != Phase.SetupComponents) { WebComponentException.SetupException(); }
 
             Middleware middleware = new(response);
             return middleware;
@@ -105,28 +109,28 @@ namespace JapeWeb
 
         public Routing Route(PathString requestPath, string staticPath)
         {
-            if (!setupWebComponents) { WebComponentException.SetupException(); }
+            if (phase != Phase.SetupComponents) { WebComponentException.SetupException(); }
 
             return RouteLow(requestPath, staticPath, null);
         }
 
         public Routing Route(PathString requestPath, string staticPath, Middleware.Response response)
         {
-            if (!setupWebComponents) { WebComponentException.SetupException(); }
+            if (phase != Phase.SetupComponents) { WebComponentException.SetupException(); }
 
             return RouteLow(requestPath, staticPath, new Middleware(response));
         }
 
         public Routing Route(PathString requestPath, string staticPath, Middleware.ResponseAsync response)
         {
-            if (!setupWebComponents) { WebComponentException.SetupException(); }
+            if (phase != Phase.SetupComponents) { WebComponentException.SetupException(); }
 
             return RouteLow(requestPath, staticPath, new Middleware(response));
         }
 
         private Routing RouteLow(PathString requestPath, string staticPath, Middleware middleware)
         {
-            if (!setupWebComponents) { WebComponentException.SetupException(); }
+            if (phase != Phase.SetupComponents) { WebComponentException.SetupException(); }
 
             Routing routing = new(requestPath, Path.Combine(Root, SystemPath.Format(staticPath)), middleware);
             return routing;
@@ -134,7 +138,7 @@ namespace JapeWeb
 
         public Mapping Map(PathString requestPath, string responsePath, Mapping.Read read)
         {
-            if (!setupWebComponents) { WebComponentException.SetupException(); }
+            if (phase != Phase.SetupComponents) { WebComponentException.SetupException(); }
 
             Mapping mapping = new(Mapping.Method.Any, requestPath, responsePath, read);
             return mapping;
@@ -142,7 +146,7 @@ namespace JapeWeb
 
         public Mapping MapGet(PathString requestPath, string responsePath, Mapping.Read read)
         {
-            if (!setupWebComponents) { WebComponentException.SetupException(); }
+            if (phase != Phase.SetupComponents) { WebComponentException.SetupException(); }
 
             Mapping mapping = new(Mapping.Method.Get, requestPath, responsePath, read);
             return mapping;
@@ -150,7 +154,7 @@ namespace JapeWeb
 
         public Mapping MapPost(PathString requestPath, string responsePath, Mapping.Read read)
         {
-            if (!setupWebComponents) { WebComponentException.SetupException(); }
+            if (phase != Phase.SetupComponents) { WebComponentException.SetupException(); }
 
             Mapping mapping = new(Mapping.Method.Post, requestPath, responsePath, read);
             return mapping;
@@ -158,28 +162,28 @@ namespace JapeWeb
 
         public ResponseTree CreateResponseTree(PathString rootPath, Middleware.Response rootResponse, params ResponseTree.Response[] responses)
         {
-            if (!setupWebComponents) { WebComponentException.SetupException(); }
+            if (phase != Phase.SetupComponents) { WebComponentException.SetupException(); }
 
             return CreateResponseTreeLow(rootPath, new Middleware(rootResponse), responses);
         }
 
         public ResponseTree CreateResponseTree(PathString rootPath, Middleware.ResponseAsync rootResponse, params ResponseTree.Response[] responses)
         {
-            if (!setupWebComponents) { WebComponentException.SetupException(); }
+            if (phase != Phase.SetupComponents) { WebComponentException.SetupException(); }
 
             return CreateResponseTreeLow(rootPath, new Middleware(rootResponse), responses);
         }
 
         public ResponseTree CreateResponseTree(PathString rootPath, params ResponseTree.Response[] responses)
         {
-            if (!setupWebComponents) { WebComponentException.SetupException(); }
+            if (phase != Phase.SetupComponents) { WebComponentException.SetupException(); }
 
             return CreateResponseTreeLow(rootPath, null, responses);
         }
 
         private ResponseTree CreateResponseTreeLow(PathString rootPath, Middleware rootMiddleware, params ResponseTree.Response[] responses)
         {
-            if (!setupWebComponents) { WebComponentException.SetupException(); }
+            if (phase != Phase.SetupComponents) { WebComponentException.SetupException(); }
 
             ResponseTree tree = new(rootPath, rootMiddleware);
             foreach (ResponseTree.Response response in responses)
@@ -192,14 +196,17 @@ namespace JapeWeb
 
         private void SetupLow(IApplicationBuilder app)
         {
+            phase = Phase.SetupMain;
             app.UseSession();
             Setup(app);
+            phase = Phase.SetupComponents;
             SetupComponents(app);
             SetupLandingPage(app);
         }
 
         private void ServicesLow(IServiceCollection services)
         {
+            phase = Phase.SetupServices;
             services.AddDistributedMemoryCache();
             services.AddSession(SessionLow);
             Services(services);
@@ -207,14 +214,12 @@ namespace JapeWeb
 
         private void SetupComponents(IApplicationBuilder app)
         {
-            setupWebComponents = true;
             IEnumerator<WebComponent> components = Components();
             while (components.MoveNext())
             {
                 components.Current.Setup(app);
                 webComponents.Add(components.Current);
             }
-            setupWebComponents = false;
         }
 
         private void SetupLandingPage(IApplicationBuilder app)

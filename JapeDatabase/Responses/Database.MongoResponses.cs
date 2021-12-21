@@ -12,49 +12,49 @@ namespace JapeDatabase
     {
         private ResponseBank<string> MongoResponses => new()
         {
+            { "query", ResponseMongoQuery },
             { "get", ResponseMongoGet },
-            { "get-where", ResponseMongoGetWhere },
             { "insert", ResponseMongoInsert },
             { "update", ResponseMongoUpdate },
             { "remove", ResponseMongoRemove },
             { "delete", ResponseMongoDelete },
         };
 
+        public async Task<Request.Result> ResponseMongoQuery(Responder<string>.Transfer transfer, JsonData data, object[] args)
+        {
+            Log.Write("Query Request");
+
+            IMongoDatabase database = mongo.GetDatabase(data.GetString("database"));
+
+            JsonCommand<BsonDocument> command = new(data.Extract("query").ToBson().ToString());
+
+            BsonDocument document = await database.RunCommandAsync(command);
+
+            return await transfer.Complete(Status.SuccessCode.Ok, document.ToJsonData());
+        }
+
         public async Task<Request.Result> ResponseMongoGet(Responder<string>.Transfer transfer, JsonData data, object[] args)
         {
             Log.Write("Get Request");
 
-            IMongoDatabase database = mongo.GetDatabase(data.GetString("store"));
+            IMongoDatabase database = mongo.GetDatabase(data.GetString("database"));
 
             IMongoCollection<BsonDocument> collection = database.GetCollection<BsonDocument>(data.GetString("collection"));
 
             BsonDocument document = await collection.Find(Mongo.Filters.Id(data.GetString("id"))).FirstOrDefaultAsync();
 
-            return await transfer.Complete(Status.SuccessCode.Ok, document.ToJson());
-        }
-
-        public async Task<Request.Result> ResponseMongoGetWhere(Responder<string>.Transfer transfer, JsonData data, object[] args)
-        {
-            Log.Write("Get Where Request");
-
-            IMongoDatabase database = mongo.GetDatabase(data.GetString("store"));
-
-            IMongoCollection<BsonDocument> collection = database.GetCollection<BsonDocument>(data.GetString("collection"));
-
-            BsonDocument document = await collection.Find(Builders<BsonDocument>.Filter.Eq(data.GetString("field"), data.GetString("value"))).FirstOrDefaultAsync();
-
-            return await transfer.Complete(Status.SuccessCode.Ok, document.ToJson());
+            return await transfer.Complete(Status.SuccessCode.Ok, document.ToJsonData());
         }
 
         public async Task<Request.Result> ResponseMongoInsert(Responder<string>.Transfer transfer, JsonData data, object[] args)
         {
             Log.Write("Insert Request");
 
-            IMongoDatabase database = mongo.GetDatabase(data.GetString("store"));
+            IMongoDatabase database = mongo.GetDatabase(data.GetString("database"));
 
             IMongoCollection<BsonDocument> collection = database.GetCollection<BsonDocument>(data.GetString("collection"));
 
-            BsonDocument document = BsonDocument.Parse(data.GetString("data"));
+            BsonDocument document = data.Extract("data").ToBson();
 
             await collection.InsertOneAsync(document);
 
@@ -65,11 +65,11 @@ namespace JapeDatabase
         {
             Log.Write("Update Request");
 
-            IMongoDatabase database = mongo.GetDatabase(data.GetString("store"));
+            IMongoDatabase database = mongo.GetDatabase(data.GetString("database"));
 
             IMongoCollection<BsonDocument> collection = database.GetCollection<BsonDocument>(data.GetString("collection"));
 
-            BsonDocument elements = BsonDocument.Parse(data.GetString("data"));
+            BsonDocument elements = data.Extract("data").ToBson();
 
             List<UpdateDefinition<BsonDocument>> updates = new();
 
@@ -88,14 +88,14 @@ namespace JapeDatabase
 
             BsonDocument document = await collection.FindOneAndUpdateAsync(Mongo.Filters.Id(data.GetString("id")), update, options);
 
-            return await transfer.Complete(Status.SuccessCode.Ok, document.ToJson());
+            return await transfer.Complete(Status.SuccessCode.Ok, document.ToJsonData());
         }
 
         public async Task<Request.Result> ResponseMongoRemove(Responder<string>.Transfer transfer, JsonData data, object[] args)
         {
             Log.Write("Update Request");
 
-            IMongoDatabase database = mongo.GetDatabase(data.GetString("store"));
+            IMongoDatabase database = mongo.GetDatabase(data.GetString("database"));
 
             IMongoCollection<BsonDocument> collection = database.GetCollection<BsonDocument>(data.GetString("collection"));
 
@@ -116,20 +116,20 @@ namespace JapeDatabase
 
             BsonDocument document = await collection.FindOneAndUpdateAsync(Mongo.Filters.Id(data.GetString("id")), update, options);
 
-            return await transfer.Complete(Status.SuccessCode.Ok, document.ToJson());
+            return await transfer.Complete(Status.SuccessCode.Ok, document.ToJsonData());
         }
 
         public async Task<Request.Result> ResponseMongoDelete(Responder<string>.Transfer transfer, JsonData data, object[] args)
         {
             Log.Write("Delete Request");
 
-            IMongoDatabase database = mongo.GetDatabase(data.GetString("store"));
+            IMongoDatabase database = mongo.GetDatabase(data.GetString("database"));
 
             IMongoCollection<BsonDocument> collection = database.GetCollection<BsonDocument>(data.GetString("collection"));
 
             BsonDocument document = await collection.FindOneAndDeleteAsync(Mongo.Filters.Id(data.GetString("id")));
 
-            return await transfer.Complete(Status.SuccessCode.Ok, document.ToJson());
+            return await transfer.Complete(Status.SuccessCode.Ok, document.ToJsonData());
         }
     }
 }

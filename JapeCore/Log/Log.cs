@@ -48,6 +48,8 @@ namespace JapeCore
             Trace.WriteLine(Stamp(value));
         }
 
+        public static void Write(JsonData value) => Write(value.Serialize());
+
         /// <summary>
         /// Writes to the console
         /// </summary>
@@ -58,6 +60,8 @@ namespace JapeCore
             Write(value);
             Trace.Listeners.Add(logListener);
         }
+
+        public static void WriteConsole(JsonData value) => WriteConsole(value.Serialize());
 
         /// <summary>
         /// Writes to the default log
@@ -74,6 +78,8 @@ namespace JapeCore
                 Console.WriteLine("Could not write to log");
             }
         }
+
+        public static void WriteLog(JsonData value) => WriteLog(value.Serialize());
         
         public static string Stamp(string value) => $"{Timestamp()}: {value}";
         public static string Timestamp() => $"{DateTime.UtcNow:u}";

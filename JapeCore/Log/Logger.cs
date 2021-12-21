@@ -38,12 +38,14 @@ namespace JapeCore
             Writer.AutoFlush = true;
         }
 
+        public void Write(JsonData value) => Write(value.Serialize());
         public void Write(string value)
         {
             JapeCore.Log.WriteConsole(value);
             Log(value);
         }
 
+        public void Log(JsonData value) => Log(value.Serialize());
         public void Log(string value)
         {
             try

@@ -1,8 +1,9 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
+using MongoDB.Bson;
+using MongoDB.Bson.IO;
 
 namespace JapeCore
 {
@@ -39,6 +40,7 @@ namespace JapeCore
         public IEnumerator GetEnumerator() => data.GetEnumerator();
 
         public void Add(string key, object value) => data.Add(key, DeserializeElement(value));
+
         public void Remove(string key) => data.Remove(key);
         
         public byte GetByte(string key) => data[key].GetByte();
@@ -93,7 +95,7 @@ namespace JapeCore
         {
             if (data.GetType() == typeof(JsonData))
             {
-                data = ((JsonData)data).Serialize();
+                data = ((JsonData)data).data;
             }
 
             byte[] bytes = JsonSerializer.SerializeToUtf8Bytes(data);
@@ -102,6 +104,6 @@ namespace JapeCore
             return document.RootElement.Clone();
         }
 
-        public void Write(Action<string> write) => write(Serialize());
+        public BsonDocument ToBson() => BsonDocument.Parse(Serialize());
     }
 }

@@ -14,7 +14,7 @@ namespace JapeHttp
             request = WebRequest.CreateHttp(url);
         }
 
-        public ApiRequest SetMethod(Request.Method method)
+        public void SetMethod(Request.Method method)
         {
             switch (method)
             {
@@ -34,45 +34,38 @@ namespace JapeHttp
                     request.Method = "DELETE";
                     break;
             }
-            return this;
         }
 
-        public ApiRequest SetContentType(string value)
+        public void SetContentType(string value)
         {
             request.ContentType = value;
-            return this;
         }
 
-        public ApiRequest AddHeader(string key, string value)
+        public void AddHeader(string key, string value)
         {
             request.Headers.Add(key, value);
-            return this;
         }
 
-        public ApiRequest Write(string data)
+        public void Write(string data)
         {
             request.GetRequestStream().Write(data);
-            return this;
         }
 
-        public ApiRequest WriteJson(JsonData data)
+        public void WriteJson(JsonData data)
         {
             request.GetRequestStream().WriteJson(data);
-            return this;
         }
 
-        public async Task<ApiRequest> WriteAsync(string data)
+        public async Task WriteAsync(string data)
         {
             Stream stream = await request.GetRequestStreamAsync();
             await stream.WriteAsync(data);
-            return this;
         }
 
-        public async Task<ApiRequest> WriteJsonAsync(JsonData data)
+        public async Task WriteJsonAsync(JsonData data)
         {
             Stream stream = await request.GetRequestStreamAsync();
             await stream.WriteJsonAsync(data);
-            return this;
         }
 
         public ApiResponse GetResponse() => ApiResponse.FromRequest(request);
