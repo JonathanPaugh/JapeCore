@@ -1,4 +1,6 @@
-﻿using MongoDB.Bson;
+﻿using System.Linq.Expressions;
+using JapeCore;
+using MongoDB.Bson;
 using MongoDB.Driver;
 
 namespace JapeDatabase
@@ -7,10 +9,7 @@ namespace JapeDatabase
     {
         public static class Filters
         {
-            public static FilterDefinition<BsonDocument> Id(string id)
-            {
-                return Builders<BsonDocument>.Filter.Eq("_id", new ObjectId(id));
-            }
+            public static FilterDefinition<BsonDocument> Id(string id) => Builders<BsonDocument>.Filter.Eq("_id", ObjectId.Parse(id));
         }
     }
 }

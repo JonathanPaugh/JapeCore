@@ -58,13 +58,6 @@ namespace JapeDatabase
             }, response => response.Json);
         }
 
-        /// <summary>
-        /// Inserts a data into a collection.
-        /// </summary>
-        /// <param name="database">The database name.</param>
-        /// <param name="collection">The collection name.</param>
-        /// <param name="data">The data to insert.</param>
-        /// <returns>Id for the inserted data.</returns>
         public async Task<JsonData> MongoInsert(string database, string collection, JsonData data)
         {
             return await MongoRequest("insert", new JsonData

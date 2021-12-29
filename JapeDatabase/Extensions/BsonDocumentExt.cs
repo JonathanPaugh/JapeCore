@@ -1,18 +1,13 @@
-﻿using MongoDB.Bson;
-using MongoDB.Bson.IO;
+﻿using JapeCore;
+using MongoDB.Bson;
 
-namespace JapeCore
+namespace JapeDatabase
 {
     public static class BsonDocumentExt
     {
-        private static JsonWriterSettings CanonicalJson => new()
-        {
-            OutputMode = JsonOutputMode.CanonicalExtendedJson,
-        };
-
         public static string GetId(this BsonDocument document)
         {
-            return document["_id"].ToJson(CanonicalJson);
+            return document["_id"].ToJson(Bson.CanonicalJson);
         }
 
         /// <summary>
@@ -28,7 +23,7 @@ namespace JapeCore
         /// <returns></returns>
         public static JsonData ToJsonData(this BsonDocument document)
         {
-            string json = document.ToJson(typeof(BsonDocument), CanonicalJson);
+            string json = document.ToJson(typeof(BsonDocument), Bson.CanonicalJson);
             return new JsonData(json);
         }
     }
