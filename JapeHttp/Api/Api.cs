@@ -1,10 +1,11 @@
-﻿using JapeCore;
+﻿using System;
+using JapeCore;
 
 namespace JapeHttp
 {
     public class Api
     {
-        private readonly string url;
+        protected readonly string url;
         public string Key { get; }
 
         public Api(string url, string key = null)
@@ -13,9 +14,8 @@ namespace JapeHttp
             Key = key;
         }
 
-        public ApiRequest Request(string request)
-        {
-            return new ApiRequest(url + request);
-        }
+        public virtual ApiRequest Request(string path) => CreateRequest(url + path);
+
+        protected static ApiRequest CreateRequest(string url) => new(url);
     }
 }

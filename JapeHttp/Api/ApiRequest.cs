@@ -9,7 +9,7 @@ namespace JapeHttp
     {
         private readonly WebRequest request;
 
-        public ApiRequest(string url)
+        internal ApiRequest(string url)
         {
             request = WebRequest.CreateHttp(url);
         }

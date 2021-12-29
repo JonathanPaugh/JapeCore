@@ -28,6 +28,8 @@ namespace JapeDatabase
         public new static IEnumerable<ICommandArg> Args => new ICommandArg[]
         {
             CommandArg<string>.CreateOptional("--env", "Environment variable for key", () => DefaultEnv),
+            CommandArg<string>.CreateOptional("--mongo", "Environment variable for key"),
+            CommandArg<string>.CreateOptional("--redis", "Environment variable for key"),
         };
 
         private readonly string key;

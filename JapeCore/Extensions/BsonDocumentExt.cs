@@ -5,7 +5,7 @@ namespace JapeCore
 {
     public static class BsonDocumentExt
     {
-        static JsonWriterSettings CanonicalJson = new()
+        private static JsonWriterSettings CanonicalJson => new()
         {
             OutputMode = JsonOutputMode.CanonicalExtendedJson,
         };
@@ -18,8 +18,8 @@ namespace JapeCore
         /// <summary>
         /// Converts a bson document to a json data.
         /// 
-        /// Converts Bson objects to Json objects.
-        /// Bson: "object" : Object("value")
+        /// Converts Bson objects to Json objects. 
+        /// Bson: "object" : Object("value"),
         /// Json: "object" : { "$key" : "value" }
         ///
         /// </summary>
