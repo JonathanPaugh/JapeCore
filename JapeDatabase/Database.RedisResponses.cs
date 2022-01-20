@@ -11,6 +11,7 @@ namespace JapeDatabase
     {
         private ResponseBank<string> RedisResponses => new()
         {
+            { "query", ResponseRedisQuery },
             { "get", ResponseRedisGet },
             { "set", ResponseRedisSet },
             { "remove", ResponseRedisRemove },
@@ -19,6 +20,17 @@ namespace JapeDatabase
             { "publish", ResponseRedisPublish },
             { "receive", ResponseRedisReceive },
         };
+
+        public async Task<Request.Result> ResponseRedisQuery(Responder<string>.Transfer transfer, JsonData data, object[] args)
+        {
+            Log.Write("Query Request");
+
+            IDatabase database = redis.GetDatabase();
+
+            RedisResult result = await database.ExecuteAsync(data.GetString("query"));
+
+            return await transfer.Complete(Status.SuccessCode.Ok, result.ToString());
+        }
 
         public async Task<Request.Result> ResponseRedisGet(Responder<string>.Transfer transfer, JsonData data, object[] args)
         {

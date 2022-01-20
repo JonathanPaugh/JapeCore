@@ -11,7 +11,7 @@ namespace JapeDatabase
     {
         public enum MongoQueryResult { Default, Cursor, First }
 
-        private async Task<T> MongoRequest<T>(string command, JsonData data, Func<ApiResponse, T> read)
+        private async Task<T> MongoRequest<T>(string command, JsonData data, Func<ApiResponse, Task<T>> read)
         {
             JsonData mongoData = new(data)
             {
@@ -23,7 +23,7 @@ namespace JapeDatabase
 
             try
             {
-                return read.Invoke(response);
+                return await read.Invoke(response);
             }
             catch
             {
@@ -37,13 +37,14 @@ namespace JapeDatabase
             {
                 { "database", database },
                 { "query", query },
-            }, delegate (ApiResponse response)
+            }, async response =>
             {
+                JsonData data = await response.ReadJsonAsync();
                 switch (queryResult)
                 {
-                    default: return response.Json;
-                    case MongoQueryResult.Cursor: return response.Json.Extract("cursor");
-                    case MongoQueryResult.First: return response.Json.Extract("cursor").ExtractArray("firstBatch").First();
+                    default: return data;
+                    case MongoQueryResult.Cursor: return data.Extract("cursor");
+                    case MongoQueryResult.First: return data.Extract("cursor").ExtractArray("firstBatch").First();
                 }
             });
         }
@@ -55,7 +56,7 @@ namespace JapeDatabase
                 { "database", database },
                 { "collection", collection },
                 { "id", id }
-            }, response => response.Json);
+            }, async response => await response.ReadJsonAsync());
         }
 
         public async Task<JsonData> MongoInsert(string database, string collection, JsonData data)
@@ -65,7 +66,7 @@ namespace JapeDatabase
                 { "database", database },
                 { "collection", collection },
                 { "data", data }
-            }, response => response.Json);
+            }, async response => await response.ReadJsonAsync());
         }
 
         public async Task<JsonData> MongoUpdate(string database, string collection, string id, JsonData data)
@@ -76,7 +77,7 @@ namespace JapeDatabase
                 { "collection", collection },
                 { "id", id },
                 { "data", data }
-            }, response => response.Json);
+            }, async response => await response.ReadJsonAsync());
         }
 
         public async Task<JsonData> MongoRemove(string database, string collection, string id, string[] data)
@@ -87,7 +88,7 @@ namespace JapeDatabase
                 { "collection", collection },
                 { "id", id },
                 { "data", data }
-            }, response => response.Json);
+            }, async response => await response.ReadJsonAsync());
         }
 
         public async Task<JsonData> MongoDelete(string database, string collection, string id)
@@ -97,7 +98,7 @@ namespace JapeDatabase
                 { "database", database },
                 { "collection", collection },
                 { "id", id }
-            }, response => response.Json);
+            }, async response => await response.ReadJsonAsync());
         }
     }
 }
