@@ -217,7 +217,7 @@ namespace JapeWeb
             IEnumerator<WebComponent> components = Components();
             while (components.MoveNext())
             {
-                components.Current.Setup(app);
+                components.Current?.Setup(app);
                 webComponents.Add(components.Current);
             }
         }
