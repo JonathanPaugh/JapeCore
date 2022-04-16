@@ -1,10 +1,18 @@
 ﻿using System.IO;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace JapeCore
 {
     public static class StreamExt
     {
+        public static byte[] ReadBytes(this Stream stream, Encoding encoding, bool keepAlive = false)
+        {
+            using BinaryReader reader = new(stream, encoding, keepAlive);
+            byte[] bytes = reader.ReadBytes((int)stream.Length);
+            return bytes;
+        }
+
         public static string Read(this Stream stream, bool keepAlive = false)
         {
             using StreamReader reader = new(stream, null, true, -1, keepAlive);
@@ -27,6 +35,12 @@ namespace JapeCore
         {
             string json = await ReadAsync(stream, keepAlive);
             return new JsonData(json);
+        }
+
+        public static void WriteBytes(this Stream stream, byte[] data, Encoding encoding, bool keepAlive = false)
+        {
+            using BinaryWriter writer = new(stream, encoding, keepAlive);
+            writer.Write(data);
         }
 
         public static void Write(this Stream stream, string data, bool keepAlive = false)

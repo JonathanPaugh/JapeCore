@@ -34,6 +34,7 @@ namespace JapeHttp
 
                 builder.UseKestrel(kestrel =>
                 {
+                    kestrel.AllowSynchronousIO = true;
                     kestrel.ConfigureHttpsDefaults(https =>
                     {
                         https.CheckCertificateRevocation = false;

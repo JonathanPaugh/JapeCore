@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 using System.Threading.Tasks;
 using JapeCore;
 using JapeHttp;
@@ -74,9 +75,11 @@ namespace JapeWeb
             return listener;
         }
 
+        protected byte[] ReadStaticBinary(string path, Encoding encoding) => listener.ReadStaticBinary(path, encoding);
         protected string ReadStaticFile(string path) => listener.ReadStaticFile(path);
         protected async Task<string> ReadStaticFileAsync(string path) => await listener.ReadStaticFileAsync(path);
 
+        protected byte[] ReadServerBinary(string path, Encoding encoding) => listener.ReadBinary(path, encoding);
         protected string ReadServerFile(string path) => listener.ReadFile(path);
         protected async Task<string> ReadServerFileAsync(string path) => await listener.ReadFileAsync(path);
 
@@ -99,7 +102,7 @@ namespace JapeWeb
             return middleware;
         }
 
-        public Middleware UseAsync(Middleware.ResponseAsync response)
+        public Middleware Use(Middleware.ResponseAsync response)
         {
             if (phase != Phase.SetupComponents) { WebComponentException.SetupException(); }
 
@@ -136,27 +139,51 @@ namespace JapeWeb
             return routing;
         }
 
-        public Mapping Map(PathString requestPath, string responsePath, Mapping.Read read)
+        public Mapping Map(PathString requestPath, string responsePath, Encoding encoding, Mapping.ReadBinary read)
         {
             if (phase != Phase.SetupComponents) { WebComponentException.SetupException(); }
 
-            Mapping mapping = new(Mapping.Method.Any, requestPath, responsePath, read);
+            Mapping mapping = Mapping.MapBinary(Mapping.Method.Any, requestPath, responsePath, encoding, read);
             return mapping;
         }
 
-        public Mapping MapGet(PathString requestPath, string responsePath, Mapping.Read read)
+        public Mapping Map(PathString requestPath, string responsePath, Mapping.ReadFile read)
         {
             if (phase != Phase.SetupComponents) { WebComponentException.SetupException(); }
 
-            Mapping mapping = new(Mapping.Method.Get, requestPath, responsePath, read);
+            Mapping mapping = Mapping.MapFile(Mapping.Method.Any, requestPath, responsePath, read);
             return mapping;
         }
 
-        public Mapping MapPost(PathString requestPath, string responsePath, Mapping.Read read)
+        public Mapping MapGet(PathString requestPath, string responsePath, Encoding encoding, Mapping.ReadBinary read)
         {
             if (phase != Phase.SetupComponents) { WebComponentException.SetupException(); }
 
-            Mapping mapping = new(Mapping.Method.Post, requestPath, responsePath, read);
+            Mapping mapping = Mapping.MapBinary(Mapping.Method.Get, requestPath, responsePath, encoding, read);
+            return mapping;
+        }
+
+        public Mapping MapGet(PathString requestPath, string responsePath, Mapping.ReadFile read)
+        {
+            if (phase != Phase.SetupComponents) { WebComponentException.SetupException(); }
+
+            Mapping mapping = Mapping.MapFile(Mapping.Method.Get, requestPath, responsePath, read);
+            return mapping;
+        }
+
+        public Mapping MapPost(PathString requestPath, string responsePath, Encoding encoding, Mapping.ReadBinary read)
+        {
+            if (phase != Phase.SetupComponents) { WebComponentException.SetupException(); }
+
+            Mapping mapping = Mapping.MapBinary(Mapping.Method.Post, requestPath, responsePath, encoding, read);
+            return mapping;
+        }
+
+        public Mapping MapPost(PathString requestPath, string responsePath, Mapping.ReadFile read)
+        {
+            if (phase != Phase.SetupComponents) { WebComponentException.SetupException(); }
+
+            Mapping mapping = Mapping.MapFile(Mapping.Method.Post, requestPath, responsePath, read);
             return mapping;
         }
 

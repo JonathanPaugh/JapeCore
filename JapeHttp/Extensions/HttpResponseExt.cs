@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using JapeCore;
 using Microsoft.AspNetCore.Http;
@@ -9,6 +10,7 @@ namespace JapeHttp
 {
     public static class HttpResponseExt
     {
+        public static void WriteBytes(this HttpResponse response, byte[] data, Encoding encoding, bool keepAlive = false) => response.Body.WriteBytes(data, encoding, keepAlive);
         public static void Write(this HttpResponse response, string data, bool keepAlive = false) => response.Body.Write(data, keepAlive);
         public static void WriteJson(this HttpResponse response, JsonData data, bool keepAlive = false) => response.Body.WriteJson(data, keepAlive);
         public static async Task WriteAsync(this HttpResponse response, string data, bool keepAlive = false) => await response.Body.WriteAsync(data, keepAlive);

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Text;
 using System.Threading.Tasks;
 using JapeCore;
 using Microsoft.AspNetCore.Builder;
@@ -47,6 +48,13 @@ namespace JapeHttp
             staticFileProvider = new PhysicalFileProvider(StaticPath);
         }
 
+        public byte[] ReadBinary(string path, Encoding encoding)
+        {
+            IFileInfo fileInfo = baseFileProvider.GetFileInfo(SystemPath.Format(path));
+            if (!fileInfo.Exists) { return null; }
+            return fileInfo.CreateReadStream().ReadBytes(encoding);
+        }
+
         public string ReadFile(string path)
         {
             IFileInfo fileInfo = baseFileProvider.GetFileInfo(SystemPath.Format(path));
@@ -59,6 +67,13 @@ namespace JapeHttp
             IFileInfo fileInfo = baseFileProvider.GetFileInfo(SystemPath.Format(path));
             if (!fileInfo.Exists) { return null; }
             return await fileInfo.CreateReadStream().ReadAsync();
+        }
+
+        public byte[] ReadStaticBinary(string path, Encoding encoding)
+        {
+            IFileInfo fileInfo = staticFileProvider.GetFileInfo(SystemPath.Format(path));
+            if (!fileInfo.Exists) { return null; }
+            return fileInfo.CreateReadStream().ReadBytes(encoding);
         }
 
         public string ReadStaticFile(string path)
